@@ -31,14 +31,34 @@ def fetch_asset(ui_ticker, ui_start_date, ui_end_date):
         asset.columns.name = None 
     return asset 
 
+# tick inspector: checks for corrupted highs and lows, negative volume, and high, open, close
 
+def tick_inspector(df):
+    # checking for duplicates 
+    duplicates = df.index.duplicated().sum()
 
+    # checking for missing dates 
+    calendar = pd.date_range(start=df.index.min(), end=df.index.max())
+    missing_dates = calendar.difference(df.index)
 
-# tick inspector 
-# in this case the tick_inspector function should do exactly the same as above 
+    # checking for corrupted highs and lows where low > high 
+    corrupted_high_low = df[df['low'] > df['high']]
 
+    # checking for where volume is below 0 
+    negative_volume = df[df['volume'] < 0]
 
+    # checking for where high vs. open/close check 
+    high_open_close = df[(df['open'] > df['high']) | (df['close'] > df['high'])]
 
+    # doing a global boolean mask check for bad data 
+    is_healthy = len(missing_dates) == 0 and len(corrupted_high_low) == 0 and len(negative_volume) == 0 and len(high_open_close) == 0 and duplicates == 0
+
+    return{"is_healthy": is_healthy, 
+           "duplicates": duplicates,
+           "missing_dates": missing_dates,
+           "corrupted_high_low": corrupted_high_low,
+           "negative_volume": negative_volume,
+           "high_open_close": high_open_close}
 
 # quant_analyzer should do same as above 
 
@@ -78,13 +98,29 @@ if st.sidebar.button("Run analysis"):
     else:
         # attemps to download the data 
         with st.spinner(f"Downloading {ui_ticker} data..."):
-            raw_data = fetch_asset(ui_ticker, ui_start_date, ui_end_date)
+            raw_data_df = fetch_asset(ui_ticker, ui_start_date, ui_end_date)
 
         # if no data available 
         if raw_data is None:
             st.error("Yahoo Finance failed to return data. Please check your dates and try again.")
         else:
-            st.success(f"Data successfully downloaded!")
-            st.dataframe(raw_data.head()) # why do we need this? 
+            st.success(f"Data successfully downloaded! \nNow inspecting and generating a data health report.")
+            st.download_button(label='Download', file_name=raw_data) 
 
-# step 2: clean data 
+# step 2: clean data (if healthy)
+    health_report = tick_inspector(raw_data_df)
+
+    if health_report['is_healthy'] == True:
+        st.success("Data is clean. Proceeding to analysis")
+    else:
+        st.error("Found bad data. Analysis stopped.")
+
+        if health_report['duplicates'] > 0:
+            st.warning(f"Found {health_report['duplicates']} duplicate rows.")
+
+        if len(health_report['negative_volume']) > 0:
+            st.warning("Negative volume ticks found: ")
+            st.dataframe(health_report['negative_volume'])
+        
+
+
