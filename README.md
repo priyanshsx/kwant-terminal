@@ -4,6 +4,8 @@ Kwant Terminal helps you source crypto assets, clean raw csv files/data and plot
 
 Kwant Terminal is an institutional-grade, event-driven web application built with Python and Streamlit. It serves as a unified pipeline for quantitative traders to download historical market data, automatically audit data integrity, and visualize advanced risk-adjusted metrics using interactive Plotly dashboards.
 
+Check out the publicly available app [here](https://kwant-terminal.streamlit.app/). 
+
 ## 🚀 The Engineering Journey
 
 This application represents the culmination of three distinct development phases, evolving from isolated terminal scripts into a cohesive full-stack application:
