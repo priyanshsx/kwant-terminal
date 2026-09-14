@@ -158,7 +158,7 @@ def quant_analyzer(df, ui_ticker):
 
 # user interface 
 
-st.title("Kwant Terminal")
+st.title("Kwant Terminal: Quantitative Analysis for Cryto Assets")
 
 # managing the sidebar 
 
