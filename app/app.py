@@ -74,7 +74,7 @@ st.title("Kwant Terminal")
 
 # managing the sidebar 
 
-st.sidebar.head("Configuration")
+st.sidebar.header("Configuration")
 
 # step 1: request for ticker and dates
 ui_ticker = st.sidebar.selectbox(label='select ticker from the list',
@@ -101,26 +101,26 @@ if st.sidebar.button("Run analysis"):
             raw_data_df = fetch_asset(ui_ticker, ui_start_date, ui_end_date)
 
         # if no data available 
-        if raw_data is None:
+        if raw_data_df is None:
             st.error("Yahoo Finance failed to return data. Please check your dates and try again.")
         else:
             st.success(f"Data successfully downloaded! \nNow inspecting and generating a data health report.")
-            st.download_button(label='Download', file_name=raw_data) 
+            st.download_button(label='Download CSV', file_name=f"{ui_ticker}_data.csv", data=raw_data_df.to_csv()) 
 
-# step 2: clean data (if healthy)
-    health_report = tick_inspector(raw_data_df)
+            # step 2: clean data (if healthy)
+            health_report = tick_inspector(raw_data_df)
 
-    if health_report['is_healthy'] == True:
-        st.success("Data is clean. Proceeding to analysis")
-    else:
-        st.error("Found bad data. Analysis stopped.")
+            if health_report['is_healthy'] == True:
+                st.success("Data is clean. Proceeding to analysis")
+            else:
+                st.error("Found bad data. Analysis stopped.")
 
-        if health_report['duplicates'] > 0:
-            st.warning(f"Found {health_report['duplicates']} duplicate rows.")
+            if health_report['duplicates'] > 0:
+                st.warning(f"Found {health_report['duplicates']} duplicate rows.")
 
-        if len(health_report['negative_volume']) > 0:
-            st.warning("Negative volume ticks found: ")
-            st.dataframe(health_report['negative_volume'])
+            if len(health_report['negative_volume']) > 0:
+                st.warning("Negative volume ticks found: ")
+                st.dataframe(health_report['negative_volume'])
         
 
 
