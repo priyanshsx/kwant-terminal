@@ -19,7 +19,7 @@ available_assets = ['BTC-USD', 'ETH-USD', 'SOL-USD', 'HYPE-USD', 'USDT-USD', 'BN
 def fetch_asset(ui_ticker, ui_start_date, ui_end_date):
 
     # downloads the raw data 
-    asset = yf.download(ticker=ui_ticker, start=ui_start_date, end=ui_end_date)
+    asset = yf.download(ui_ticker, start=ui_start_date, end=ui_end_date)
 
     # handles if yf.download did not work/failed 
     if asset.empty:
@@ -192,8 +192,7 @@ if st.sidebar.button("Run analysis"):
         if raw_data_df is None:
             st.error("Yahoo Finance failed to return data. Please check your dates and try again.")
         else:
-            st.success(f"Data successfully downloaded! \nNow inspecting and generating a data health report.")
-            st.download_button(label='Download CSV', file_name=f"{ui_ticker}_data.csv", data=raw_data_df.to_csv()) 
+            st.success(f"Data successfully downloaded! \nNow inspecting and generating a data health report.") 
 
             # step 2: clean data (if healthy)
             health_report = tick_inspector(raw_data_df)
