@@ -198,7 +198,7 @@ if st.sidebar.button("Run analysis"):
             health_report = tick_inspector(raw_data_df)
 
             if health_report['is_healthy'] == True:
-                st.success("Data is clean. Proceeding to analysis")
+                st.success("Data is clean. Analysis initiated.")
 
                 # calling the quant_analyzer function 
                 fig, quant_fig, hist_fig = quant_analyzer(raw_data_df, ui_ticker)
