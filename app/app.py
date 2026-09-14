@@ -60,15 +60,103 @@ def tick_inspector(df):
            "negative_volume": negative_volume,
            "high_open_close": high_open_close}
 
-# quant_analyzer should do same as above 
+# quant_analyzer  
 
+def quant_analyzer(df, ui_ticker):
+    # daily returns 
+    df['daily_returns'] = df['close'].pct_change()
 
+    # moving averages
+    df['sma_20'] = df['close'].rolling(window=20).mean()
+    df['sma_50'] = df['close'].rolling(window=50).mean()
+
+    # calculating the log returns  
+    df['log_returns'] = np.log(df['close'] / df['close'].shift(1)) 
+
+    # rolling volatility for a 30-day period (annualized, for 365 trading days for crypto)
+    df['rolling_vol_annualized'] = df['log_returns'].rolling(window=30).std() * np.sqrt(365)
+
+    # calculating the cumulative return 
+    df['cumulative_return'] = (1 + df['daily_returns']).cumprod() - 1 
+
+    # calculating the max drawdown 
+    df['cum_return_for_drawdown'] = (1 + df['daily_returns'].fillna(0)).cumprod()
+    df['running_max'] = df['cum_return_for_drawdown'].cummax()
+    df['drawdown'] = ((df['cum_return_for_drawdown'] - df['running_max']) / df['running_max'])
+    max_drawdown = df['drawdown'].min()
+
+    # visualizations 
+    fig = go.Figure()
+
+    # adding the candlestick trace 
+
+    fig.add_trace(go.Candlestick(
+        x=df.index,
+        open=df['open'],
+        high=df['high'],
+        low=df['low'],
+        close=df['close'],
+        name='Price'
+    ))
+
+    # adding the sma traces 
+
+    fig.add_trace(go.Scatter(
+        x=df.index,
+        y=df['sma_20'],
+        mode='lines',
+        name='20-day SMA',
+        line=dict(color='blue', width=1.5)
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=df.index,
+        y=df['sma_50'],
+        mode='lines',
+        name='50-day SMA',
+        line=dict(color='orange', width=1.5)
+    ))
+
+    # making subplots for quant charts 
+
+    quant_fig = make_subplots(rows=3, cols=1, shared_xaxes=True)
+
+    # risk vs. return 
+
+    quant_fig.add_trace(go.Scatter(
+        x=df.index,
+        y=df['cumulative_return'],
+        mode='lines',
+        name='return',
+        line=dict(color='green', width=1.5)
+    ), row=1, col=1)
+
+    quant_fig.add_trace(go.Scatter(
+        x=df.index,
+        y=df['rolling_vol_annualized'],
+        mode='lines',
+        name='annualized risk',
+        line=dict(color='purple', width=1.5)
+    ), row=2, col=1)
+
+    # underwater drawdown chart 
+
+    quant_fig.add_trace(go.Scatter(
+        x=df.index,
+        y=df['drawdown'],
+        mode='lines',
+        name='drawdown',
+        line=dict(color='red', width=1.5),
+        fill='tozeroy'
+    ), row=3, col=1)
+
+    # returns distribution histogram 
+
+    hist_fig = go.Figure(go.Histogram(x=df['log_returns'].dropna(), nbinsx=100, name='Returns Distribution'))
+
+    return fig, quant_fig, hist_fig
 
 # user interface 
-# build a control panel on the left side of the screen 
-# here the user should be able to type their ticker or ideally choose from a dropdown menu 
-# execution should happen based on checking if st.sidebar.button 
-
 
 st.title("Kwant Terminal")
 
@@ -112,15 +200,29 @@ if st.sidebar.button("Run analysis"):
 
             if health_report['is_healthy'] == True:
                 st.success("Data is clean. Proceeding to analysis")
+
+                # calling the quant_analyzer function 
+                fig, quant_fig, hist_fig = quant_analyzer(raw_data_df, ui_ticker)
+
+                # building the charts 
+                st.subheader(f"{ui_ticker} Price Action")
+                st.plotly_chart(fig, use_container_width=True)
+
+                st.subheader(f"{ui_ticker} Quant Analysis")
+                st.plotly_chart(quant_fig, use_container_width=True)
+
+                st.subheader(f"{ui_ticker} Historical Returns")
+                st.plotly_chart(hist_fig, use_container_width=True)
+                
             else:
                 st.error("Found bad data. Analysis stopped.")
 
-            if health_report['duplicates'] > 0:
-                st.warning(f"Found {health_report['duplicates']} duplicate rows.")
+                if health_report['duplicates'] > 0:
+                    st.warning(f"Found {health_report['duplicates']} duplicate rows.")
 
-            if len(health_report['negative_volume']) > 0:
-                st.warning("Negative volume ticks found: ")
-                st.dataframe(health_report['negative_volume'])
+                if len(health_report['negative_volume']) > 0:
+                    st.warning("Negative volume ticks found: ")
+                    st.dataframe(health_report['negative_volume'])
         
 
 
