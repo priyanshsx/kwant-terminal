@@ -13,6 +13,21 @@ import yfinance as yf
 available_assets = ['BTC-USD', 'ETH-USD', 'SOL-USD', 'HYPE-USD', 'USDT-USD', 'BNB-USD', 'XRP-USD',
     'ZEC-USD', 'WETH-USD', 'TRX-USD', 'NEAR-USD', 'LSK-USD']
 
+# checking min and max for date 
+@st.cache_data(ttl=86400)
+
+def get_crypto_date_bounds(symbol):
+    if not symbol: 
+        return None, None 
+    ticker = yf.Ticker(symbol)
+    df = ticker.history(period='max')
+
+    if df.empty: 
+        return None, None 
+
+    return df.index.min().date(), df.index.max().date()
+
+
 # OHLCV downloader 
 # the function download_data(ticker) should effectively download the raw csv data 
 # it needs to be stripped off of input() and print() for it to work flawlessly 
@@ -168,14 +183,28 @@ st.sidebar.header("Configuration")
 ui_ticker = st.sidebar.selectbox(label='select ticker from the list',
                          options=available_assets, 
                          index=None)
-ui_start_date = st.sidebar.date_input(label='select start date',
-                              value=None,
-                              min_value=None,
-                              max_value="today")
-ui_end_date = st.sidebar.date_input(label='select end date',
-                              value="today",
-                              min_value=None,
-                              max_value="today")
+
+if ui_ticker:
+    min_date, max_date = get_crypto_date_bounds(ui_ticker)
+
+    if min_date and max_date:
+        st.sidebar.info(f"Available from {min_date} to {max_date}")
+
+        ui_start_date = st.sidebar.date_input(label='select start date',
+                                            value=min_date,
+                                            min_value=min_date,
+                                            max_value=max_date)
+
+        ui_end_date = st.sidebar.date_input(label='select end date',
+                                            value=max_date,
+                                            min_value=min_date,
+                                            max_value=max_date)
+    else:
+        st.sidebar.warning("Failed to fetch history for this asset.")
+        ui_start_date, ui_end_date = None, None
+else:
+    st.sidebar.info("Please select a ticker above to configure dates.")
+    ui_start_date, ui_end_date = None, None
 
 # letting the user click the run analysis button to continue
 if st.sidebar.button("Run analysis"):
