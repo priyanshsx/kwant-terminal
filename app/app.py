@@ -181,8 +181,6 @@ st.title("Kwant Terminal: Quantitative Analysis for Cryto Assets")
 
 st.sidebar.header("Configuration")
 
-st.sidebar("For research purposes only.")
-
 # step 1: request for ticker and dates
 ui_ticker = st.sidebar.selectbox(label='select a ticker from the list',
                          options=available_assets, 
