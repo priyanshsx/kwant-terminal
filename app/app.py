@@ -177,7 +177,7 @@ def quant_analyzer(df, ui_ticker):
 
 # user interface 
 
-st.title("Kwant Terminal: Quantitative Analysis for Cryto Assets")
+st.title("Kwant Terminal: Quantitative Analysis for Crypto Assets")
 
 # managing the sidebar 
 
@@ -192,10 +192,10 @@ if ui_ticker:
     try: 
         min_date, max_date = get_crypto_date_bounds(ui_ticker)
     except ValueError:
-        st.warning("No history is available for this asset. Please try another asset.")
+        st.sidebar.warning("No history is available for this asset. Please try another asset.")
         ui_start_date, ui_end_date = None, None 
     except Exception: 
-        st.warning("Couldn't reach Yahoo Finance. Please try again in a minute.")
+        st.sidebar.warning("Couldn't reach Yahoo Finance. Please try again in a minute.")
         ui_start_date, ui_end_date = None, None 
     else:   
         st.sidebar.info(f"Available from {min_date} to {max_date}")
@@ -247,6 +247,12 @@ if st.sidebar.button("Run analysis"):
     if health_report['is_healthy'] == True:
         st.success("Data is clean. Analysis initiated.")
 
+        missing = health_report['missing_dates']
+        if len(missing) > 0:
+            date_list = ", ".join(missing.strftime('%Y-%m-%d'))
+            st.warning(f"{len(missing)} date(s) missing from the source data: {date_list}."
+                       f"The analysis still ran, but volatility and return distribution figures may be slightly affected.")
+
         # calling the quant_analyzer function 
         fig, quant_fig, hist_fig = quant_analyzer(raw_data_df, ui_ticker)
 
@@ -270,10 +276,9 @@ if st.sidebar.button("Run analysis"):
             st.warning("Negative volume ticks found: ")
             st.dataframe(health_report['negative_volume'])
 
-        missing = health_report['missing_dates']
-        date_list = ", ".join(missing[:10].strftime('%Y-%m-%d'))
-
         if len(health_report['missing_dates']) > MAX_MISSING_DATES:
+            missing = health_report['missing_dates']
+            date_list = ", ".join(missing[:10].strftime('%Y-%m-%d'))
             st.warning(f"Found {len(health_report['missing_dates'])} missing dates which exceed the allowed missing dates value of {MAX_MISSING_DATES}. Missing: {date_list}.")
 
         if len(health_report['corrupted_high_low']) > 0:
