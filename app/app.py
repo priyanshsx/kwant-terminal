@@ -18,8 +18,6 @@ available_assets = ['BTC-USD', 'ETH-USD', 'SOL-USD', 'HYPE-USD', 'USDT-USD', 'BN
 @st.cache_data(ttl=86400)
 
 def get_crypto_date_bounds(symbol):
-    if not symbol: 
-        return None, None
     ticker = yf.Ticker(symbol)
     df = ticker.history(period='max')
 
