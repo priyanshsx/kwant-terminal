@@ -181,6 +181,8 @@ st.title("Kwant Terminal: Quantitative Analysis for Cryto Assets")
 
 st.sidebar.header("Configuration")
 
+st.sidebar("For research purposes only.")
+
 # step 1: request for ticker and dates
 ui_ticker = st.sidebar.selectbox(label='select a ticker from the list',
                          options=available_assets, 
@@ -279,4 +281,3 @@ if st.sidebar.button("Run analysis"):
             st.warning("Rows where open or close is higher than high: ")
             st.dataframe(health_report['high_open_close'])
 
-st.sidebar("For educational and research purposes only. Not financial advice. Past performance does not predict future results.")
