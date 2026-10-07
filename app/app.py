@@ -14,6 +14,8 @@ from datetime import timedelta
 available_assets = ['BTC-USD', 'ETH-USD', 'SOL-USD', 'HYPE-USD', 'USDT-USD', 'BNB-USD', 'XRP-USD',
     'ZEC-USD', 'WETH-USD', 'TRX-USD', 'NEAR-USD', 'LSK-USD']
 
+MAX_MISSING_DATES = 5
+
 # checking min and max for date 
 @st.cache_data(ttl=86400)
 
@@ -68,7 +70,7 @@ def tick_inspector(df):
     high_open_close = df[(df['open'] > df['high']) | (df['close'] > df['high'])]
 
     # doing a global boolean mask check for bad data 
-    is_healthy = len(missing_dates) == 0 and len(corrupted_high_low) == 0 and len(negative_volume) == 0 and len(high_open_close) == 0 and duplicates == 0
+    is_healthy = len(missing_dates) <= MAX_MISSING_DATES and len(corrupted_high_low) == 0 and len(negative_volume) == 0 and len(high_open_close) == 0 and duplicates == 0
 
     return{"is_healthy": is_healthy, 
            "duplicates": duplicates,
@@ -268,8 +270,11 @@ if st.sidebar.button("Run analysis"):
             st.warning("Negative volume ticks found: ")
             st.dataframe(health_report['negative_volume'])
 
-        if len(health_report['missing_dates']) > 0:
-            st.warning(f"Found {len(health_report['missing_dates'])} missing dates.")
+        missing = health_report['missing_dates']
+        date_list = ", ".join(missing[:10].strftime('%Y-%m-%d'))
+
+        if len(health_report['missing_dates']) > MAX_MISSING_DATES:
+            st.warning(f"Found {len(health_report['missing_dates'])} missing dates which exceed the allowed missing dates value of {MAX_MISSING_DATES}. Missing: {date_list}.")
 
         if len(health_report['corrupted_high_low']) > 0:
             st.warning("Rows where low is higher than high: ")
