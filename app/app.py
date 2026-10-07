@@ -19,12 +19,12 @@ available_assets = ['BTC-USD', 'ETH-USD', 'SOL-USD', 'HYPE-USD', 'USDT-USD', 'BN
 
 def get_crypto_date_bounds(symbol):
     if not symbol: 
-        return None, None 
+        return None, None
     ticker = yf.Ticker(symbol)
     df = ticker.history(period='max')
 
     if df.empty: 
-        return None, None 
+        raise ValueError("No history available for this asset.") 
 
     return df.index.min().date(), df.index.max().date()
 
@@ -38,7 +38,7 @@ def get_crypto_date_bounds(symbol):
 def fetch_asset(ui_ticker, ui_start_date, ui_end_date):
 
     # downloads the raw data 
-    asset = yf.download(ui_ticker, start=ui_start_date, end=ui_end_date)
+    asset = yf.download(ui_ticker, start=ui_start_date, end=ui_end_date, auto_adjust=True, progress=False)
 
     # handles if yf.download did not work/failed 
     if asset.empty:
@@ -189,9 +189,15 @@ ui_ticker = st.sidebar.selectbox(label='select ticker from the list',
                          index=None)
 
 if ui_ticker:
-    min_date, max_date = get_crypto_date_bounds(ui_ticker)
-
-    if min_date and max_date:
+    try: 
+        min_date, max_date = get_crypto_date_bounds(ui_ticker)
+    except ValueError:
+        st.warning("No history is available for this asset. Please try another asset.")
+        ui_start_date, ui_end_date = None, None 
+    except Exception: 
+        st.warning("Couldn't reach Yahoo Finance. Please try again in a minute.")
+        ui_start_date, ui_end_date = None, None 
+    else:   
         st.sidebar.info(f"Available from {min_date} to {max_date}")
 
         ui_start_date = st.sidebar.date_input(label='select start date',
@@ -203,9 +209,6 @@ if ui_ticker:
                                             value=max_date,
                                             min_value=min_date,
                                             max_value=max_date)
-    else:
-        st.sidebar.warning("Failed to fetch history for this asset.")
-        ui_start_date, ui_end_date = None, None
 else:
     st.sidebar.info("Please select a ticker above to configure dates.")
     ui_start_date, ui_end_date = None, None
