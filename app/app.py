@@ -250,7 +250,7 @@ if st.sidebar.button("Run analysis"):
         missing = health_report['missing_dates']
         if len(missing) > 0:
             date_list = ", ".join(missing.strftime('%Y-%m-%d'))
-            st.warning(f"{len(missing)} date(s) missing from the source data: {date_list}."
+            st.warning(f"{len(missing)} date(s) missing from the source data: {date_list}. "
                        f"The analysis still ran, but volatility and return distribution figures may be slightly affected.")
 
         # calling the quant_analyzer function 
