@@ -4,6 +4,7 @@ import numpy as np
 import plotly.graph_objects as go 
 from plotly.subplots import make_subplots
 import yfinance as yf
+from datetime import timedelta
 
 # ========================================================================================= #
 
@@ -27,10 +28,13 @@ def get_crypto_date_bounds(symbol):
 
     return df.index.min().date(), df.index.max().date()
 
-
 # OHLCV downloader 
 # the function download_data(ticker) should effectively download the raw csv data 
 # it needs to be stripped off of input() and print() for it to work flawlessly 
+# caching data 
+
+@st.cache_data(ttl=3600, max_entries=100)
+
 def fetch_asset(ui_ticker, ui_start_date, ui_end_date):
 
     # downloads the raw data 
@@ -38,12 +42,12 @@ def fetch_asset(ui_ticker, ui_start_date, ui_end_date):
 
     # handles if yf.download did not work/failed 
     if asset.empty:
-        return None
-    else:
-        # formats the columns into a standard from the raw downloaded data   
-        asset.columns = asset.columns.droplevel(1).str.lower()
-        asset.index.name = 'date'
-        asset.columns.name = None 
+        raise ValueError("No data found for this ticker and date range.")
+    
+    # formats the columns into a standard from the raw downloaded data   
+    asset.columns = asset.columns.droplevel(1).str.lower()
+    asset.index.name = 'date'
+    asset.columns.name = None 
     return asset 
 
 # tick inspector: checks for corrupted highs and lows, negative volume, and high, open, close
@@ -209,48 +213,68 @@ else:
 # letting the user click the run analysis button to continue
 if st.sidebar.button("Run analysis"):
 
-    # checking if a ticker was selected
+    # input validation 
     if ui_ticker is None:
-        st.error(f"Please select a valid ticker before running the analysis.")
-    else:
-        # attemps to download the data 
+        st.error("Please select a ticker before running the analysis.")
+        st.stop()
+    if ui_start_date is None or ui_end_date is None:
+        st.error("Date range unavailable for this asset. Please try another ticker.")
+        st.stop()
+
+    if ui_start_date >= ui_end_date:
+        st.error("Start date must be before the end date.")
+        st.stop()
+
+    # data download
+    try: 
         with st.spinner(f"Downloading {ui_ticker} data..."):
-            raw_data_df = fetch_asset(ui_ticker, ui_start_date, ui_end_date)
+            raw_data_df = fetch_asset(ui_ticker, ui_start_date, ui_end_date + timedelta(days=1)) 
+    except ValueError as e:
+        st.error(str(e))
+        st.stop()
+    except Exception:
+        st.error("Couldn't reach Yahoo Finance. Please try again in a minute.")
+        st.stop()
 
-        # if no data available 
-        if raw_data_df is None:
-            st.error("Yahoo Finance failed to return data. Please check your dates and try again.")
-        else:
-            st.success(f"Data successfully downloaded! \nNow inspecting and generating a data health report.") 
+    st.success(f"Data successfully downloaded! \nNow inspecting and generating a data health report.")
 
-            # step 2: clean data (if healthy)
-            health_report = tick_inspector(raw_data_df)
+    # step 2: clean data (if healthy)
+    health_report = tick_inspector(raw_data_df)
 
-            if health_report['is_healthy'] == True:
-                st.success("Data is clean. Analysis initiated.")
+    if health_report['is_healthy'] == True:
+        st.success("Data is clean. Analysis initiated.")
 
-                # calling the quant_analyzer function 
-                fig, quant_fig, hist_fig = quant_analyzer(raw_data_df, ui_ticker)
+        # calling the quant_analyzer function 
+        fig, quant_fig, hist_fig = quant_analyzer(raw_data_df, ui_ticker)
 
-                # building the charts 
-                st.subheader(f"{ui_ticker} Price Action")
-                st.plotly_chart(fig, use_container_width=True)
+        # building the charts 
+        st.subheader(f"{ui_ticker} Price Action")
+        st.plotly_chart(fig, use_container_width=True)
 
-                st.subheader(f"{ui_ticker} Quant Analysis")
-                st.plotly_chart(quant_fig, use_container_width=True)
+        st.subheader(f"{ui_ticker} Quant Analysis")
+        st.plotly_chart(quant_fig, use_container_width=True)
 
-                st.subheader(f"{ui_ticker} Historical Returns")
-                st.plotly_chart(hist_fig, use_container_width=True)
-                
-            else:
-                st.error("Found bad data. Analysis stopped.")
-
-                if health_report['duplicates'] > 0:
-                    st.warning(f"Found {health_report['duplicates']} duplicate rows.")
-
-                if len(health_report['negative_volume']) > 0:
-                    st.warning("Negative volume ticks found: ")
-                    st.dataframe(health_report['negative_volume'])
+        st.subheader(f"{ui_ticker} Historical Returns")
+        st.plotly_chart(hist_fig, use_container_width=True)
         
+    else:
+        st.error("Found bad data. Analysis stopped.")
 
+        if health_report['duplicates'] > 0:
+            st.warning(f"Found {health_report['duplicates']} duplicate rows.")
+
+        if len(health_report['negative_volume']) > 0:
+            st.warning("Negative volume ticks found: ")
+            st.dataframe(health_report['negative_volume'])
+
+        if len(health_report['missing_dates']) > 0:
+            st.warning(f"Found {len(health_report['missing_dates'])} missing dates.")
+
+        if len(health_report['corrupted_high_low']) > 0:
+            st.warning("Rows where low is higher than high: ")
+            st.dataframe(health_report['corrupted_high_low'])
+
+        if len(health_report['high_open_close']) > 0:
+            st.warning("Rows where open or close is higher than high: ")
+            st.dataframe(health_report['high_open_close'])
 
