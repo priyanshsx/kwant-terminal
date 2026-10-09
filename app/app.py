@@ -306,13 +306,12 @@ if st.sidebar.button("Run analysis"):
         candlestick_fig, risk_vs_cum_return_fig, drawdown_fig, returns_histogram_fig = charts
 
         # Building the columns in streamlit 
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
         col1.metric(label="Skewness", value=round(enriched_data['skewness'].iloc[-1], 4))
         col2.metric(label='Kurtosis', value=round(enriched_data['kurtosis'].iloc[-1], 4))
-        col3.metric(label='Avg. Daily Log Return', value=f"{round(enriched_data['avg_daily_log_return'].iloc[-1], 4): .2%}")
-        col4.metric(label='Avg. Daily Return', value=f"{round(enriched_data['avg_daily_simple_return'].iloc[-1], 4): .2%}")
         col3.metric(label='Avg. Daily Log Return', value=f"{enriched_data['avg_daily_log_return'].iloc[-1]: .2%}")
         col4.metric(label='Avg. Daily Return', value=f"{enriched_data['avg_daily_simple_return'].iloc[-1]: .2%}")
+        col5.metric(label="Max Drawdown",value=f"{enriched_data['max_drawdown'].iloc[-1]: .2%}")
 
         # building the main charts 
         col1, col2 = st.columns(2)
