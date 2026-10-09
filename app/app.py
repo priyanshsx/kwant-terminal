@@ -171,7 +171,7 @@ def quant_analyzer(df, ui_ticker):
 
     # returns distribution histogram 
 
-    hist_fig = go.Figure(go.Histogram(x=df['log_returns'].dropna(), nbinsx=100, name='Returns Distribution'))
+    hist_fig = go.Figure(go.Histogram(x=df['log_returns'].dropna(), xbins=dict(size=0.05), name='Returns Distribution'))
 
     quant_fig.update_yaxes(
         title_text="Cumulative Return",
@@ -199,8 +199,11 @@ def quant_analyzer(df, ui_ticker):
     hist_fig.update_yaxes(title_text="Number of days")
 
     return fig, quant_fig, hist_fig
+#--------------------------------------------------------------#
 
-# user interface 
+# User Interface 
+
+
 
 st.title("Kwant Terminal: Quantitative Analysis for Crypto Assets")
 
