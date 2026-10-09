@@ -175,7 +175,12 @@ def quant_analyzer(df, ui_ticker):
 
     # returns distribution histogram 
 
-    hist_fig = go.Figure(go.Histogram(x=log_rets, xbins=dict(size=0.005), name='Returns Distribution'))
+    hist_fig = go.Figure(go.Histogram(x=log_rets, 
+                                      xbins=dict(size=0.005), 
+                                      name='Returns Distribution'),
+                                      hovertemplate=("Daily Return: %{xbin.start} to %{xbin.end}<br>"
+                                                     "Days in this range: %{y}"
+                                                     "<extra></extra>"))
 
     quant_fig.update_yaxes(
         title_text="Cumulative Return",
@@ -297,7 +302,8 @@ if st.sidebar.button("Run analysis"):
         st.plotly_chart(quant_fig, use_container_width=True)
 
         st.subheader(f"{ui_ticker} Historical Returns")
-        st.caption("Axis zoomed to the 1st-99th percentile of daily returns. Zoom out to see exteme days.")
+        st.caption("Each bar groups days by their return. Hover to see the return range and how many days fell in it. "
+           "Axis zoomed to the 1st-99th percentile. Zoom out to see extreme days.")
         st.plotly_chart(hist_fig, use_container_width=True)
         
     else:
