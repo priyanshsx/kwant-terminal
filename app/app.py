@@ -211,7 +211,7 @@ def quant_analyzer(df, ui_ticker):
 
 
 
-st.title("Kwant Terminal: Quantitative Analysis for Crypto Assets")
+st.title("Quartermaster: Quantitative Analysis for Crypto Assets")
 
 # managing the sidebar 
 
