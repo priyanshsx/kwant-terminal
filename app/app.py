@@ -319,7 +319,6 @@ if st.sidebar.button("Run analysis"):
         with col1:
             # risk vs cumulative return 
             st.subheader(f"{ui_ticker} Risk vs. Cumulative Return")
-            risk_vs_cum_return = style_fig()
             st.plotly_chart(risk_vs_cum_return_fig, use_container_width=True)
 
             # drawdown 
