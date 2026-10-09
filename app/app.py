@@ -5,18 +5,18 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import yfinance as yf
 from datetime import timedelta
+#--------------------------------------------------------------#
 
-# ========================================================================================= #
-
-# global variables 
+# Global Variables 
 
 # list of available assets you can download historical data for from yfinance
 available_assets = ['BTC-USD', 'ETH-USD', 'SOL-USD', 'HYPE-USD', 'USDT-USD', 'BNB-USD', 'XRP-USD',
     'ZEC-USD', 'WETH-USD', 'TRX-USD', 'NEAR-USD', 'LSK-USD']
 
 MAX_MISSING_DATES = 5
+#--------------------------------------------------------------#
 
-# checking min and max for date 
+# Checks for date ranges for which data is available from yfinance
 @st.cache_data(ttl=86400)
 
 def get_crypto_date_bounds(symbol):
@@ -27,12 +27,9 @@ def get_crypto_date_bounds(symbol):
         raise ValueError("No history available for this asset.") 
 
     return df.index.min().date(), df.index.max().date()
+#--------------------------------------------------------------#
 
-# OHLCV downloader 
-# the function download_data(ticker) should effectively download the raw csv data 
-# it needs to be stripped off of input() and print() for it to work flawlessly 
-# caching data 
-
+# OHLCV downloader: downloads the raw data from yfinance
 @st.cache_data(ttl=3600, max_entries=100)
 
 def fetch_asset(ui_ticker, ui_start_date, ui_end_date):
@@ -49,9 +46,9 @@ def fetch_asset(ui_ticker, ui_start_date, ui_end_date):
     asset.index.name = 'date'
     asset.columns.name = None 
     return asset 
+#--------------------------------------------------------------#
 
-# tick inspector: checks for corrupted highs and lows, negative volume, and high, open, close
-
+# Tick Inspector: checks for corrupted highs and lows, negative volume, and high, open, close
 def tick_inspector(df):
     # checking for duplicates 
     duplicates = df.index.duplicated().sum()
@@ -78,9 +75,9 @@ def tick_inspector(df):
            "corrupted_high_low": corrupted_high_low,
            "negative_volume": negative_volume,
            "high_open_close": high_open_close}
+#--------------------------------------------------------------#
 
-# quant_analyzer  
-
+# Quant Analyzer: computes the metrics for the charts 
 def quant_analyzer(df, ui_ticker):
     # daily returns 
     df['daily_returns'] = df['close'].pct_change()
@@ -104,10 +101,22 @@ def quant_analyzer(df, ui_ticker):
     df['drawdown'] = ((df['cum_return_for_drawdown'] - df['running_max']) / df['running_max'])
     max_drawdown = df['drawdown'].min()
 
+    # calculating the tape metrics: skew, kurtosis, sharpe, sortino 
+    df['skewness'] = df['log_returns'].skew()
+    df['kurtosis'] = df['log_returns'].kurt()
+    df['avg_daily_return'] = df['log_returns'].mean()
+
+    return df
+#--------------------------------------------------------------#
+
+# Visualisation Function: builds the charts for the metrics computed above 
+def visualize(df):
+    
+    # Global variables for function 
     log_rets = df['log_returns'].dropna()
     lo = log_rets.quantile(0.01)
     hi = log_rets.quantile(0.99)
-
+    
     # visualizations 
     fig = go.Figure()
 
@@ -208,9 +217,6 @@ def quant_analyzer(df, ui_ticker):
 #--------------------------------------------------------------#
 
 # User Interface 
-
-
-
 st.title("Quartermaster: Quantitative Analysis for Crypto Assets")
 
 # managing the sidebar 
@@ -288,7 +294,9 @@ if st.sidebar.button("Run analysis"):
                        f"The analysis still ran, but volatility and return distribution figures may be slightly affected.")
 
         # calling the quant_analyzer function 
-        fig, quant_fig, hist_fig = quant_analyzer(raw_data_df, ui_ticker)
+        enriched_data = quant_analyzer(raw_data_df, ui_ticker)
+        charts = visualize(enriched_data)
+        fig, quant_fig, hist_fig = charts
 
         # building the charts 
         st.subheader(f"{ui_ticker} Price Action")
