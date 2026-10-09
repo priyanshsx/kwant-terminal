@@ -188,7 +188,7 @@ def visualize(df):
                                       hovertemplate=("Daily Return near %{x:.1%}<br>Days: %{y}<extra></extra>")))
 
     quant_fig.update_yaxes(
-        title_text="Cumulative Return",
+        title_text="Cumulative Return (since start date)",
         tickformat=".1%",
         row=1, 
         col=1
@@ -297,6 +297,12 @@ if st.sidebar.button("Run analysis"):
         enriched_data = quant_analyzer(raw_data_df, ui_ticker)
         charts = visualize(enriched_data)
         fig, quant_fig, hist_fig = charts
+
+        # Building the columns in streamlit 
+        col1, col2, col3 = st.columns(3)
+        col1.metric(label="Skewness", value=enriched_data['skewness'].iloc[-1])
+        col2.metric(label='Kurtosis', value=enriched_data['kurtosis'].iloc[-1])
+        col3.metric(label='Average Daily Return', value=enriched_data['avg_daily_return'].iloc[-1])
 
         # building the charts 
         st.subheader(f"{ui_ticker} Price Action")
