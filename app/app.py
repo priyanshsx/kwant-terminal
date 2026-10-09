@@ -176,9 +176,7 @@ def quant_analyzer(df, ui_ticker):
     # returns distribution histogram 
 
     hist_fig = go.Figure(go.Histogram(x=log_rets, xbins=dict(size=0.005), name='Returns Distribution',
-                                      hovertemplate=("Daily Return: %{xbin.start} to %{xbin.end}<br>"
-                                                     "Days in this range: %{y}"
-                                                     "<extra></extra>")))
+                                      hovertemplate=("Daily Return near %{x:.1%}<br>Days: %{y}<extra></extra>")))
 
     quant_fig.update_yaxes(
         title_text="Cumulative Return",
