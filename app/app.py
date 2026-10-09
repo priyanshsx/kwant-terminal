@@ -301,28 +301,22 @@ if st.sidebar.button("Run analysis"):
         col4.metric(label='Avg. Daily Return', value=f"{enriched_data['avg_daily_simple_return'].iloc[-1]: .2%}")
 
         # building the main charts 
-        col1, col2 = st.columns(2)
+        # risk vs cumulative return 
+        st.subheader(f"{ui_ticker} Risk vs. Cumulative Return")
+        st.plotly_chart(quant_fig, use_container_width=True)
 
-        with col1:
+        # drawdown 
+        st.subheader(f"{drawdown_fig} Drawdown (for selected period)")
+        st.plotly_chart(drawdown_fig, use_container_width=True)
 
-            # risk vs cumulative return 
-            st.subheader(f"{ui_ticker} Risk vs. Cumulative Return")
-            st.plotly_chart(quant_fig, use_container_width=True)
+        # price chart with SMAs
+        st.subheader(f"{ui_ticker} Price Action with SMAs")
+        st.plotly_chart(fig, use_container_width=True)
 
-            # drawdown 
-            st.subheader(f"{drawdown_fig} Drawdown (for selected period)")
-            st.plotly_chart(drawdown_fig, use_container_width=True)
-
-        with col2:
-
-            # price chart with SMAs
-            st.subheader(f"{ui_ticker} Price Action with SMAs")
-            st.plotly_chart(fig, use_container_width=True)
-
-            st.subheader(f"{ui_ticker} Historical Returns")
-            st.caption("Each bar groups days by their return. Hover to see the return range and how many days fell in it. "
-                       "Axis zoomed to the 1st-99th percentile. Zoom out to see extreme days.")
-            st.plotly_chart(hist_fig, use_container_width=True)
+        st.subheader(f"{ui_ticker} Historical Returns")
+        st.caption("Each bar groups days by their return. Hover to see the return range and how many days fell in it. "
+                    "Axis zoomed to the 1st-99th percentile. Zoom out to see extreme days.")
+        st.plotly_chart(hist_fig, use_container_width=True)
 #--------------------------------------------------------------#
 
 # Dealing with bad data         
