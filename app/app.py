@@ -297,6 +297,7 @@ if st.sidebar.button("Run analysis"):
         st.plotly_chart(quant_fig, use_container_width=True)
 
         st.subheader(f"{ui_ticker} Historical Returns")
+        st.caption("Axis zoomed to the 1st-99th percentile of daily returns. Zoom out to see exteme days.")
         st.plotly_chart(hist_fig, use_container_width=True)
         
     else:
