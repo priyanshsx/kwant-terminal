@@ -300,9 +300,9 @@ if st.sidebar.button("Run analysis"):
 
         # Building the columns in streamlit 
         col1, col2, col3 = st.columns(3)
-        col1.metric(label="Skewness", value=enriched_data['skewness'].iloc[-1])
-        col2.metric(label='Kurtosis', value=enriched_data['kurtosis'].iloc[-1])
-        col3.metric(label='Average Daily Return', value=enriched_data['avg_daily_return'].iloc[-1])
+        col1.metric(label="Skewness", value=round(enriched_data['skewness'].iloc[-1], 4))
+        col2.metric(label='Kurtosis', value=round(enriched_data['kurtosis'].iloc[-1], 4))
+        col3.metric(label='Average Daily Return', value=round(enriched_data['avg_daily_return'].iloc[-1], 4))
 
         # building the charts 
         st.subheader(f"{ui_ticker} Price Action")
