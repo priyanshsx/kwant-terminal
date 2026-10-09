@@ -173,6 +173,31 @@ def quant_analyzer(df, ui_ticker):
 
     hist_fig = go.Figure(go.Histogram(x=df['log_returns'].dropna(), nbinsx=100, name='Returns Distribution'))
 
+    quant_fig.update_yaxes(
+        title_text="Cumulative Return",
+        tickformat=".1%",
+        row=1, 
+        col=1
+    )
+
+    quant_fig.update_yaxes(
+        title_text="Annualized Volatility",
+        tickformat=".1%",
+        row=2,
+        col=1
+    )
+
+    quant_fig.update_yaxes(
+        title_text="Drawdown",
+        tickformat=".1%",
+        row=3,
+        col=1
+    )
+
+    hist_fig.update_xaxes(title_text="Daily log returns",
+                          tickformat=".1%")
+    hist_fig.update_yaxes(title_text="Number of days")
+
     return fig, quant_fig, hist_fig
 
 # user interface 
