@@ -1,3 +1,6 @@
+#---------------------beginning-of-code------------------------#
+
+# importing libraries
 import streamlit as st 
 import pandas as pd 
 import numpy as np 
@@ -104,7 +107,8 @@ def quant_analyzer(df, ui_ticker):
     # calculating the tape metrics: skew, kurtosis, sharpe, sortino 
     df['skewness'] = df['log_returns'].skew()
     df['kurtosis'] = df['log_returns'].kurt()
-    df['avg_daily_return'] = df['log_returns'].mean()
+    df['avg_daily_log_return'] = df['log_returns'].mean()
+    df['avg_daily_simple_return'] = df['daily_returns'].mean()
 
     return df
 #--------------------------------------------------------------#
@@ -220,7 +224,6 @@ def visualize(df):
 st.title("Quartermaster: Quantitative Analysis for Crypto Assets")
 
 # managing the sidebar 
-
 st.sidebar.header("Configuration")
 
 # step 1: request for ticker and dates
@@ -228,6 +231,7 @@ ui_ticker = st.sidebar.selectbox(label='select a ticker from the list',
                          options=available_assets, 
                          index=None)
 
+# managing ticker entries
 if ui_ticker:
     try: 
         min_date, max_date = get_crypto_date_bounds(ui_ticker)
@@ -252,6 +256,7 @@ if ui_ticker:
 else:
     st.sidebar.info("Please select a ticker above to configure dates.")
     ui_start_date, ui_end_date = None, None
+#--------------------------------------------------------------#
 
 # letting the user click the run analysis button to continue
 if st.sidebar.button("Run analysis"):
@@ -280,6 +285,7 @@ if st.sidebar.button("Run analysis"):
         st.stop()
 
     st.success(f"Data successfully downloaded! \nNow inspecting and generating a data health report.")
+#--------------------------------------------------------------#
 
     # step 2: clean data (if healthy)
     health_report = tick_inspector(raw_data_df)
@@ -299,10 +305,11 @@ if st.sidebar.button("Run analysis"):
         fig, quant_fig, hist_fig = charts
 
         # Building the columns in streamlit 
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
         col1.metric(label="Skewness", value=round(enriched_data['skewness'].iloc[-1], 4))
         col2.metric(label='Kurtosis', value=round(enriched_data['kurtosis'].iloc[-1], 4))
-        col3.metric(label='Average Daily Return', value=round(enriched_data['avg_daily_return'].iloc[-1], 4))
+        col3.metric(label='Average Daily Log Return', value=round(enriched_data['avg_daily_log_return'].iloc[-1], 4))
+        col4.metric(label='Average Daily Simple Return %', value=round(enriched_data['avg_daily_simple_return'].iloc[-1], 4))
 
         # building the charts 
         st.subheader(f"{ui_ticker} Price Action")
@@ -315,7 +322,9 @@ if st.sidebar.button("Run analysis"):
         st.caption("Each bar groups days by their return. Hover to see the return range and how many days fell in it. "
            "Axis zoomed to the 1st-99th percentile. Zoom out to see extreme days.")
         st.plotly_chart(hist_fig, use_container_width=True)
-        
+#--------------------------------------------------------------#
+
+# Dealing with bad data         
     else:
         st.error("Found bad data. Analysis stopped.")
 
@@ -338,4 +347,5 @@ if st.sidebar.button("Run analysis"):
         if len(health_report['high_open_close']) > 0:
             st.warning("Rows where open or close is higher than high: ")
             st.dataframe(health_report['high_open_close'])
-
+#--------------------------------------------------------------#
+#---------------------end-of-code------------------------------#
