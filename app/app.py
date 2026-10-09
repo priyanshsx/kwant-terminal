@@ -125,6 +125,7 @@ def visualize(df):
     fig = go.Figure()
 
     # adding the candlestick trace 
+
     fig.add_trace(go.Candlestick(
         x=df.index,
         open=df['open'],
@@ -135,6 +136,7 @@ def visualize(df):
     ))
 
     # adding the sma traces 
+
     fig.add_trace(go.Scatter(
         x=df.index,
         y=df['sma_20'],
@@ -152,9 +154,11 @@ def visualize(df):
     ))
 
     # making subplots for quant charts 
-    quant_fig = make_subplots(rows=2, cols=1, shared_xaxes=True)
+
+    quant_fig = make_subplots(rows=3, cols=1, shared_xaxes=True)
 
     # risk vs. return 
+
     quant_fig.add_trace(go.Scatter(
         x=df.index,
         y=df['cumulative_return'],
@@ -172,18 +176,18 @@ def visualize(df):
     ), row=2, col=1)
 
     # underwater drawdown chart 
-    drawdown_fig = go.Figure()
 
-    drawdown_fig.add_trace(go.Scatter(
+    quant_fig.add_trace(go.Scatter(
         x=df.index,
         y=df['drawdown'],
         mode='lines',
         name='Drawdown',
         line=dict(color='red', width=1.5),
         fill='tozeroy'
-    ))
+    ), row=3, col=1)
 
     # returns distribution histogram 
+
     hist_fig = go.Figure(go.Histogram(x=log_rets, xbins=dict(size=0.005), name='Returns Distribution',
                                       hovertemplate=("Daily Return near %{x:.1%}<br>Days: %{y}<extra></extra>")))
 
@@ -201,12 +205,19 @@ def visualize(df):
         col=1
     )
 
+    quant_fig.update_yaxes(
+        title_text="Drawdown",
+        tickformat=".1%",
+        row=3,
+        col=1
+    )
+
     hist_fig.update_xaxes(range=[lo, hi], 
                           title_text="Daily log returns",
                           tickformat=".0%")
     hist_fig.update_yaxes(title_text="Number of days")
 
-    return fig, quant_fig, drawdown_fig, hist_fig
+    return fig, quant_fig, hist_fig
 #--------------------------------------------------------------#
 
 # User Interface 
@@ -291,31 +302,25 @@ if st.sidebar.button("Run analysis"):
         # calling the quant_analyzer function 
         enriched_data = quant_analyzer(raw_data_df, ui_ticker)
         charts = visualize(enriched_data)
-        fig, quant_fig, drawdown_fig, hist_fig = charts
+        fig, quant_fig, hist_fig = charts
 
         # Building the columns in streamlit 
         col1, col2, col3, col4 = st.columns(4)
         col1.metric(label="Skewness", value=round(enriched_data['skewness'].iloc[-1], 4))
         col2.metric(label='Kurtosis', value=round(enriched_data['kurtosis'].iloc[-1], 4))
-        col3.metric(label='Avg. Daily Log Return', value=f"{enriched_data['avg_daily_log_return'].iloc[-1]: .2%}")
-        col4.metric(label='Avg. Daily Return', value=f"{enriched_data['avg_daily_simple_return'].iloc[-1]: .2%}")
+        col3.metric(label='Avg. Daily Log Return', value=f"{round(enriched_data['avg_daily_log_return'].iloc[-1], 4): .2%}")
+        col4.metric(label='Avg. Daily Return', value=f"{round(enriched_data['avg_daily_simple_return'].iloc[-1], 4): .2%}")
 
-        # building the main charts 
-        # risk vs cumulative return 
-        st.subheader(f"{ui_ticker} Risk vs. Cumulative Return")
-        st.plotly_chart(quant_fig, use_container_width=True)
-
-        # drawdown 
-        st.subheader(f"{drawdown_fig} Drawdown (for selected period)")
-        st.plotly_chart(drawdown_fig, use_container_width=True)
-
-        # price chart with SMAs
-        st.subheader(f"{ui_ticker} Price Action with SMAs")
+        # building the charts 
+        st.subheader(f"{ui_ticker} Price Action")
         st.plotly_chart(fig, use_container_width=True)
+
+        st.subheader(f"{ui_ticker} Quant Analysis")
+        st.plotly_chart(quant_fig, use_container_width=True)
 
         st.subheader(f"{ui_ticker} Historical Returns")
         st.caption("Each bar groups days by their return. Hover to see the return range and how many days fell in it. "
-                    "Axis zoomed to the 1st-99th percentile. Zoom out to see extreme days.")
+           "Axis zoomed to the 1st-99th percentile. Zoom out to see extreme days.")
         st.plotly_chart(hist_fig, use_container_width=True)
 #--------------------------------------------------------------#
 
