@@ -294,15 +294,12 @@ if st.sidebar.button("Run analysis"):
     except Exception:
         st.error("Couldn't reach Yahoo Finance. Please try again in a minute.")
         st.stop()
-
-    st.success(f"Data successfully downloaded! \nNow inspecting and generating a data health report.")
 #--------------------------------------------------------------#
 
     # step 2: clean data (if healthy)
     health_report = tick_inspector(raw_data_df)
 
     if health_report['is_healthy'] == True:
-        st.success("Data is clean. Analysis initiated.")
 
         missing = health_report['missing_dates']
         if len(missing) > 0:
@@ -345,6 +342,7 @@ if st.sidebar.button("Run analysis"):
             st.plotly_chart(returns_histogram_fig, use_container_width=True)
             st.caption("Each bar groups days by their return. Hover to see the return range and how many days fell in it. "
                        "Axis zoomed to the 1st-99th percentile. Zoom out to see extreme days.")
+        st.toast("Analysis complete.")
 #--------------------------------------------------------------#
 
 # Dealing with bad data         
