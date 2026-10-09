@@ -154,7 +154,6 @@ def quant_analyzer(df, ui_ticker):
         x=df.index,
         y=df['rolling_vol_annualized'],
         mode='lines',
-        tickformat='.0%',
         name='Annualized Risk',
         line=dict(color='purple', width=1.5)
     ), row=2, col=1)
