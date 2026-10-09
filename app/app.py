@@ -102,7 +102,7 @@ def quant_analyzer(df, ui_ticker):
     df['cum_return_for_drawdown'] = (1 + df['daily_returns'].fillna(0)).cumprod()
     df['running_max'] = df['cum_return_for_drawdown'].cummax()
     df['drawdown'] = ((df['cum_return_for_drawdown'] - df['running_max']) / df['running_max'])
-    max_drawdown = df['drawdown'].min()
+    df['max_drawdown'] = df['drawdown'].min()
 
     # calculating the tape metrics: skew, kurtosis, sharpe, sortino 
     df['skewness'] = df['log_returns'].skew()
@@ -310,7 +310,7 @@ if st.sidebar.button("Run analysis"):
         col2.metric(label="Excess Kurtosis", value=round(enriched_data['kurtosis'].iloc[-1], 4))
         col3.metric(label="Avg. Daily Log Return", value=f"{enriched_data['avg_daily_log_return'].iloc[-1]: .2%}")
         col4.metric(label="Avg. Daily Return", value=f"{enriched_data['avg_daily_simple_return'].iloc[-1]: .2%}")
-        col5.metric(label="Max Drawdown", value=f"{round(enriched_data['max_drawdown'].iloc[-1]), 4}")
+        col5.metric(label="Max Drawdown", value=f"{enriched_data['max_drawdown'].iloc[-1]: .2%}")
 
         # building the charts 
         st.subheader(f"{ui_ticker} Price Action")
