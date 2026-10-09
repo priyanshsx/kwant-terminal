@@ -308,8 +308,8 @@ if st.sidebar.button("Run analysis"):
         col1, col2, col3, col4 = st.columns(4)
         col1.metric(label="Skewness", value=round(enriched_data['skewness'].iloc[-1], 4))
         col2.metric(label='Kurtosis', value=round(enriched_data['kurtosis'].iloc[-1], 4))
-        col3.metric(label='Average Daily Log Return', value=round(enriched_data['avg_daily_log_return'].iloc[-1], 4))
-        col4.metric(label='Average Daily Simple Return %', value=round(enriched_data['avg_daily_simple_return'].iloc[-1], 4))
+        col3.metric(label='Average Daily Log Return (%)', value=f"{round(enriched_data['avg_daily_log_return'].iloc[-1], 4): .2%}")
+        col4.metric(label='Average Daily Simple Return (%)', value=f"{round(enriched_data['avg_daily_simple_return'].iloc[-1], 4): .2%}")
 
         # building the charts 
         st.subheader(f"{ui_ticker} Price Action")
