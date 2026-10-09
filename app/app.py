@@ -44,7 +44,7 @@ def fetch_asset(ui_ticker, ui_start_date, ui_end_date):
     # handles if yf.download did not work/failed 
     if asset.empty:
         raise ValueError("No data found for this ticker and date range.")
-    
+
     # formats the columns into a standard from the raw downloaded data   
     asset.columns = asset.columns.droplevel(1).str.lower()
     asset.index.name = 'date'
@@ -103,7 +103,7 @@ def quant_analyzer(df, ui_ticker):
     df['cum_return_for_drawdown'] = (1 + df['daily_returns'].fillna(0)).cumprod()
     df['running_max'] = df['cum_return_for_drawdown'].cummax()
     df['drawdown'] = ((df['cum_return_for_drawdown'] - df['running_max']) / df['running_max'])
-    df['max_drawdown'] = df['drawdown'].min()
+    max_drawdown = df['drawdown'].min()
 
     # calculating the tape metrics: skew, kurtosis, sharpe, sortino 
     df['skewness'] = df['log_returns'].skew()
@@ -116,18 +116,17 @@ def quant_analyzer(df, ui_ticker):
 
 # Visualisation Function: builds the charts for the metrics computed above 
 def visualize(df):
-    
+
     # Global variables for function 
     log_rets = df['log_returns'].dropna()
     lo = log_rets.quantile(0.01)
     hi = log_rets.quantile(0.99)
-    
+
     # visualizations 
-    fig = go.Figure()
+    candlestick_fig = go.Figure()
 
     # adding the candlestick trace 
-
-    fig.add_trace(go.Candlestick(
+    candlestick_fig.add_trace(go.Candlestick(
         x=df.index,
         open=df['open'],
         high=df['high'],
@@ -137,8 +136,8 @@ def visualize(df):
     ))
 
     # adding the sma traces 
-
-    fig.add_trace(go.Scatter(
+    # sma 20
+    candlestick_fig.add_trace(go.Scatter(
         x=df.index,
         y=df['sma_20'],
         mode='lines',
@@ -146,7 +145,8 @@ def visualize(df):
         line=dict(color='blue', width=1.5)
     ))
 
-    fig.add_trace(go.Scatter(
+    # sma 50
+    candlestick_fig.add_trace(go.Scatter(
         x=df.index,
         y=df['sma_50'],
         mode='lines',
@@ -155,12 +155,10 @@ def visualize(df):
     ))
 
     # making subplots for quant charts 
-
-    quant_fig = make_subplots(rows=3, cols=1, shared_xaxes=True)
+    risk_vs_cum_return_fig = make_subplots(rows=2, cols=1, shared_xaxes=True)
 
     # risk vs. return 
-
-    quant_fig.add_trace(go.Scatter(
+    risk_vs_cum_return_fig.add_trace(go.Scatter(
         x=df.index,
         y=df['cumulative_return'],
         mode='lines',
@@ -168,7 +166,7 @@ def visualize(df):
         line=dict(color='green', width=1.5)
     ), row=1, col=1)
 
-    quant_fig.add_trace(go.Scatter(
+    risk_vs_cum_return_fig.add_trace(go.Scatter(
         x=df.index,
         y=df['rolling_vol_annualized'],
         mode='lines',
@@ -177,48 +175,50 @@ def visualize(df):
     ), row=2, col=1)
 
     # underwater drawdown chart 
-
-    quant_fig.add_trace(go.Scatter(
+    drawdown_fig = go.Figure()
+    drawdown_fig.add_trace(go.Scatter(
         x=df.index,
         y=df['drawdown'],
         mode='lines',
         name='Drawdown',
         line=dict(color='red', width=1.5),
         fill='tozeroy'
-    ), row=3, col=1)
+    ))
 
     # returns distribution histogram 
-
-    hist_fig = go.Figure(go.Histogram(x=log_rets, xbins=dict(size=0.005), name='Returns Distribution',
+    returns_histogram_fig = go.Figure(go.Histogram(x=log_rets, xbins=dict(size=0.005), name='Returns Distribution',
                                       hovertemplate=("Daily Return near %{x:.1%}<br>Days: %{y}<extra></extra>")))
 
-    quant_fig.update_yaxes(
+    risk_vs_cum_return_fig.update_yaxes(
         title_text="Cumulative Return (since start date)",
         tickformat=".1%",
         row=1, 
         col=1
     )
 
-    quant_fig.update_yaxes(
+    risk_vs_cum_return_fig.update_yaxes(
         title_text="Annualized Volatility",
         tickformat=".1%",
         row=2,
         col=1
     )
 
-    quant_fig.update_yaxes(
-        title_text="Drawdown",
-        tickformat=".1%",
-        row=3,
-        col=1
-    )
-
-    hist_fig.update_xaxes(range=[lo, hi], 
+    returns_histogram_fig.update_xaxes(range=[lo, hi], 
                           title_text="Daily log returns",
                           tickformat=".0%")
-    hist_fig.update_yaxes(title_text="Number of days")
+    returns_histogram_fig.update_yaxes(title_text="Number of days")
 
-    return fig, quant_fig, hist_fig
+    return candlestick_fig, risk_vs_cum_return_fig, drawdown_fig, returns_histogram_fig
+#--------------------------------------------------------------#
+
+def style_fig(fig, height=380):
+    fig.update_layout(
+        height=height,
+        margin=dict(t=40, b=30, l=50, r=20),
+        legend=dict(orientation="h", y=1.12),
+        template="plotly_dark",
+    )
+    return fig
 #--------------------------------------------------------------#
 
 # User Interface 
@@ -303,27 +303,40 @@ if st.sidebar.button("Run analysis"):
         # calling the quant_analyzer function 
         enriched_data = quant_analyzer(raw_data_df, ui_ticker)
         charts = visualize(enriched_data)
-        fig, quant_fig, hist_fig = charts
+        candlestick_fig, risk_vs_cum_return_fig, drawdown_fig, returns_histogram_fig = charts
 
         # Building the columns in streamlit 
-        col1, col2, col3, col4, col5 = st.columns(5)
+        col1, col2, col3, col4 = st.columns(4)
         col1.metric(label="Skewness", value=round(enriched_data['skewness'].iloc[-1], 4))
-        col2.metric(label="Excess Kurtosis", value=round(enriched_data['kurtosis'].iloc[-1], 4))
-        col3.metric(label="Avg. Daily Log Return", value=f"{enriched_data['avg_daily_log_return'].iloc[-1]: .2%}")
-        col4.metric(label="Avg. Daily Return", value=f"{enriched_data['avg_daily_simple_return'].iloc[-1]: .2%}")
-        col5.metric(label="Max Drawdown", value=f"{enriched_data['max_drawdown'].iloc[-1]: .2%}")
+        col2.metric(label='Kurtosis', value=round(enriched_data['kurtosis'].iloc[-1], 4))
+        col3.metric(label='Avg. Daily Log Return', value=f"{round(enriched_data['avg_daily_log_return'].iloc[-1], 4): .2%}")
+        col4.metric(label='Avg. Daily Return', value=f"{round(enriched_data['avg_daily_simple_return'].iloc[-1], 4): .2%}")
+        col3.metric(label='Avg. Daily Log Return', value=f"{enriched_data['avg_daily_log_return'].iloc[-1]: .2%}")
+        col4.metric(label='Avg. Daily Return', value=f"{enriched_data['avg_daily_simple_return'].iloc[-1]: .2%}")
 
-        # building the charts 
-        st.subheader(f"{ui_ticker} Price Action")
-        st.plotly_chart(fig, use_container_width=True)
+        # building the main charts 
+        col1, col2 = st.columns(2)
 
-        st.subheader(f"{ui_ticker} Quant Analysis")
-        st.plotly_chart(quant_fig, use_container_width=True)
+        with col1:
+            # risk vs cumulative return 
+            st.subheader(f"{ui_ticker} Risk vs. Cumulative Return")
+            risk_vs_cum_return = style_fig()
+            st.plotly_chart(risk_vs_cum_return_fig, use_container_width=True)
 
-        st.subheader(f"{ui_ticker} Historical Returns")
-        st.caption("Each bar groups days by their return. Hover to see the return range and how many days fell in it. "
+            # drawdown 
+            st.subheader(f"{drawdown_fig} Drawdown (for selected period)")
+            st.plotly_chart(drawdown_fig, use_container_width=True)
+        
+        with col2:
+            # price chart with SMAs
+            st.subheader(f"{ui_ticker} Price Action with SMAs")
+            st.plotly_chart(candlestick_fig, use_container_width=True)
+
+            # returns histogram
+            st.subheader(f"{ui_ticker} Historical Returns")
+            st.caption("Each bar groups days by their return. Hover to see the return range and how many days fell in it. "
            "Axis zoomed to the 1st-99th percentile. Zoom out to see extreme days.")
-        st.plotly_chart(hist_fig, use_container_width=True)
+            st.plotly_chart(returns_histogram_fig, use_container_width=True)
 #--------------------------------------------------------------#
 
 # Dealing with bad data         
@@ -350,4 +363,3 @@ if st.sidebar.button("Run analysis"):
             st.warning("Rows where open or close is higher than high: ")
             st.dataframe(health_report['high_open_close'])
 #--------------------------------------------------------------#
-#---------------------end-of-code------------------------------#
