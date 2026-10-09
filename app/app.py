@@ -165,6 +165,8 @@ def visualize(df):
         line=dict(color='orange', width=1.5)
     ))
 
+    candlestick_fig.update_layout(xaxis_rangeslider_visible=False)
+
     # making subplots for quant charts 
     risk_vs_cum_return_fig = make_subplots(rows=2, cols=1, shared_xaxes=True)
 
@@ -195,6 +197,8 @@ def visualize(df):
         line=dict(color='red', width=1.5),
         fill='tozeroy'
     ))
+
+    drawdown_fig.update_yaxes(title_text="Drawdown", tickformat=".1%")
 
     # returns distribution histogram 
     returns_histogram_fig = go.Figure(go.Histogram(x=log_rets, xbins=dict(size=0.005), name='Returns Distribution',
@@ -314,7 +318,7 @@ if st.sidebar.button("Run analysis"):
         # Building the columns in streamlit 
         col1, col2, col3, col4, col5 = st.columns(5)
         col1.metric(label="Skewness", value=round(enriched_data['skewness'].iloc[-1], 4))
-        col2.metric(label='Kurtosis', value=round(enriched_data['kurtosis'].iloc[-1], 4))
+        col2.metric(label='Excess Kurtosis', value=round(enriched_data['kurtosis'].iloc[-1], 4))
         col3.metric(label='Avg. Daily Log Return', value=f"{enriched_data['avg_daily_log_return'].iloc[-1]: .2%}")
         col4.metric(label='Avg. Daily Return', value=f"{enriched_data['avg_daily_simple_return'].iloc[-1]: .2%}")
         col5.metric(label="Max Drawdown",value=f"{enriched_data['max_drawdown'].iloc[-1]: .2%}")
@@ -328,7 +332,7 @@ if st.sidebar.button("Run analysis"):
             st.plotly_chart(risk_vs_cum_return_fig, use_container_width=True)
 
             # drawdown 
-            st.subheader(f"{drawdown_fig} Drawdown (for selected period)")
+            st.subheader(f"{ui_ticker} Drawdown (for selected period)")
             st.plotly_chart(drawdown_fig, use_container_width=True)
         
         with col2:
@@ -338,9 +342,9 @@ if st.sidebar.button("Run analysis"):
 
             # returns histogram
             st.subheader(f"{ui_ticker} Historical Returns")
-            st.caption("Each bar groups days by their return. Hover to see the return range and how many days fell in it. "
-           "Axis zoomed to the 1st-99th percentile. Zoom out to see extreme days.")
             st.plotly_chart(returns_histogram_fig, use_container_width=True)
+            st.caption("Each bar groups days by their return. Hover to see the return range and how many days fell in it. "
+                       "Axis zoomed to the 1st-99th percentile. Zoom out to see extreme days.")
 #--------------------------------------------------------------#
 
 # Dealing with bad data         
