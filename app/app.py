@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import yfinance as yf
 from datetime import timedelta
+st.set_page_config(layout="wide")
 #--------------------------------------------------------------#
 
 # Global Variables 
