@@ -114,6 +114,17 @@ def quant_analyzer(df, ui_ticker):
     return df
 #--------------------------------------------------------------#
 
+# Styling function for all the figures 
+def style_fig(fig, height=380):
+    fig.update_layout(
+        height=height,
+        margin=dict(t=40, b=30, l=50, r=20),
+        legend=dict(orientation="h", y=1.12),
+        template="plotly_dark",
+    )
+    return fig
+#--------------------------------------------------------------#
+
 # Visualisation Function: builds the charts for the metrics computed above 
 def visualize(df):
 
@@ -208,17 +219,12 @@ def visualize(df):
                           tickformat=".0%")
     returns_histogram_fig.update_yaxes(title_text="Number of days")
 
-    return candlestick_fig, risk_vs_cum_return_fig, drawdown_fig, returns_histogram_fig
-#--------------------------------------------------------------#
-
-def style_fig(fig, height=380):
-    fig.update_layout(
-        height=height,
-        margin=dict(t=40, b=30, l=50, r=20),
-        legend=dict(orientation="h", y=1.12),
-        template="plotly_dark",
+    return (
+        style_fig(candlestick_fig), 
+        style_fig(risk_vs_cum_return_fig, height=450), 
+        style_fig(drawdown_fig), 
+        style_fig(returns_histogram_fig)
     )
-    return fig
 #--------------------------------------------------------------#
 
 # User Interface 
