@@ -103,7 +103,7 @@ def quant_analyzer(df, ui_ticker):
     df['cum_return_for_drawdown'] = (1 + df['daily_returns'].fillna(0)).cumprod()
     df['running_max'] = df['cum_return_for_drawdown'].cummax()
     df['drawdown'] = ((df['cum_return_for_drawdown'] - df['running_max']) / df['running_max'])
-    max_drawdown = df['drawdown'].min()
+    df['max_drawdown'] = df['drawdown'].min()
 
     # calculating the tape metrics: skew, kurtosis, sharpe, sortino 
     df['skewness'] = df['log_returns'].skew()
