@@ -146,7 +146,7 @@ def quant_analyzer(df, ui_ticker):
         x=df.index,
         y=df['cumulative_return'],
         mode='lines',
-        name='return',
+        name='Return',
         line=dict(color='green', width=1.5)
     ), row=1, col=1)
 
@@ -154,7 +154,8 @@ def quant_analyzer(df, ui_ticker):
         x=df.index,
         y=df['rolling_vol_annualized'],
         mode='lines',
-        name='annualized risk',
+        tickformat='.0%',
+        name='Annualized Risk',
         line=dict(color='purple', width=1.5)
     ), row=2, col=1)
 
@@ -164,7 +165,7 @@ def quant_analyzer(df, ui_ticker):
         x=df.index,
         y=df['drawdown'],
         mode='lines',
-        name='drawdown',
+        name='Drawdown',
         line=dict(color='red', width=1.5),
         fill='tozeroy'
     ), row=3, col=1)
