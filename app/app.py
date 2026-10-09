@@ -104,6 +104,10 @@ def quant_analyzer(df, ui_ticker):
     df['drawdown'] = ((df['cum_return_for_drawdown'] - df['running_max']) / df['running_max'])
     max_drawdown = df['drawdown'].min()
 
+    log_rets = df['log_returns'].dropna()
+    lo = log_rets.quantile(0.01)
+    hi = log_rets.quantile(0.99)
+
     # visualizations 
     fig = go.Figure()
 
@@ -194,8 +198,9 @@ def quant_analyzer(df, ui_ticker):
         col=1
     )
 
-    hist_fig.update_xaxes(title_text="Daily log returns",
-                          tickformat=".1%")
+    hist_fig.update_xaxes(range=[lo, hi], 
+                          title_text="Daily log returns",
+                          tickformat=".0%")
     hist_fig.update_yaxes(title_text="Number of days")
 
     return fig, quant_fig, hist_fig
