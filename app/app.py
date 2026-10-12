@@ -271,6 +271,7 @@ else:
 
 # letting the user click the run analysis button to continue
 if st.sidebar.button("Run analysis"):
+    st.session_state.pop("result", None)
 
     # input validation 
     if ui_ticker is None:
@@ -300,6 +301,27 @@ if st.sidebar.button("Run analysis"):
     health_report = tick_inspector(raw_data_df)
 
     if health_report['is_healthy'] == True:
+        enriched_data = quant_analyzer(raw_data_df,ui_ticker)
+    else:
+        enriched_data = None
+    
+    # storing the session state 
+    st.session_state["result"] = {
+            "ticker": ui_ticker,
+            "start_date": ui_start_date,
+            "end_date": ui_end_date,
+            "health_report": health_report,
+            "enriched_data": enriched_data
+        }
+    st.toast("Inspection complete.")
+
+result = st.session_state.get("result")
+
+if result:
+    health_report = result["health_report"]
+
+    if health_report["is_healthy"]:
+        enriched_data = result["enriched_data"] 
 
         missing = health_report['missing_dates']
         if len(missing) > 0:
@@ -307,8 +329,7 @@ if st.sidebar.button("Run analysis"):
             st.warning(f"{len(missing)} date(s) missing from the source data: {date_list}. "
                        f"The analysis still ran, but volatility and return distribution figures may be slightly affected.")
 
-        # calling the quant_analyzer function 
-        enriched_data = quant_analyzer(raw_data_df, ui_ticker)
+        # visualizing charts
         charts = visualize(enriched_data)
         candlestick_fig, risk_vs_cum_return_fig, drawdown_fig, returns_histogram_fig = charts
 
@@ -325,24 +346,23 @@ if st.sidebar.button("Run analysis"):
 
         with col1:
             # risk vs cumulative return 
-            st.subheader(f"{ui_ticker} Risk vs. Cumulative Return")
+            st.subheader(f"{result["ticker"]} Risk vs. Cumulative Return")
             st.plotly_chart(risk_vs_cum_return_fig, use_container_width=True)
 
             # drawdown 
-            st.subheader(f"{ui_ticker} Drawdown (for selected period)")
+            st.subheader(f"{result["ticker"]} Drawdown (for selected period)")
             st.plotly_chart(drawdown_fig, use_container_width=True)
         
         with col2:
             # price chart with SMAs
-            st.subheader(f"{ui_ticker} Price Action with SMAs")
+            st.subheader(f"{result["ticker"]} Price Action with SMAs")
             st.plotly_chart(candlestick_fig, use_container_width=True)
 
             # returns histogram
-            st.subheader(f"{ui_ticker} Historical Returns")
+            st.subheader(f"{result["ticker"]} Historical Returns")
             st.plotly_chart(returns_histogram_fig, use_container_width=True)
             st.caption("Each bar groups days by their return. Hover to see the return range and how many days fell in it. "
                        "Axis zoomed to the 1st-99th percentile. Zoom out to see extreme days.")
-        st.toast("Analysis complete.")
 #--------------------------------------------------------------#
 
 # Dealing with bad data         
