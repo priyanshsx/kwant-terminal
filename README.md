@@ -209,8 +209,8 @@ All charts are interactive Plotly figures: hover, zoom, and pan.
 ## Running locally
 
 ```bash
-git clone <your-repo-url>
-cd <your-repo-folder>
+git clone https://github.com/priyanshsx/kwant-terminal
+cd kwant-terminal
 
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
