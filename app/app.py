@@ -237,7 +237,7 @@ st.title("Quartermaster: Quantitative Analysis for Crypto Assets")
 # managing the sidebar 
 st.sidebar.header("Configuration")
 
-# step 1: request for ticker and dates
+# Step 1: request for ticker and dates
 ui_ticker = st.sidebar.selectbox(label='select a ticker from the list',
                          options=available_assets, 
                          index=None)
@@ -296,7 +296,7 @@ if st.sidebar.button("Run analysis"):
         st.stop()
 #--------------------------------------------------------------#
 
-    # step 2: clean data (if healthy)
+    # Step 2: Clean data (if healthy)
     health_report = tick_inspector(raw_data_df)
 
     if health_report['is_healthy'] == True:
@@ -320,7 +320,7 @@ if st.sidebar.button("Run analysis"):
         col4.metric(label='Avg. Daily Return', value=f"{enriched_data['avg_daily_simple_return'].iloc[-1]: .2%}")
         col5.metric(label="Max Drawdown",value=f"{enriched_data['max_drawdown'].iloc[-1]: .2%}")
 
-        # building the main charts 
+        # Step 3: Build the charts  
         col1, col2 = st.columns(2)
 
         with col1:
@@ -369,3 +369,4 @@ if st.sidebar.button("Run analysis"):
             st.warning("Rows where open or close is higher than high: ")
             st.dataframe(health_report['high_open_close'])
 #--------------------------------------------------------------#
+#----------------------End-of-code-----------------------------#
