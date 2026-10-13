@@ -232,7 +232,7 @@ def visualize(df):
 #--------------------------------------------------------------#
 
 # User Interface 
-st.title("Quartermaster: Quantitative Analysis for Crypto Assets")
+st.title("Source. Process. Visualize.")
 
 # managing the sidebar 
 st.sidebar.header("Configuration")
