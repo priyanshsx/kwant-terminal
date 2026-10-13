@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation | Quartermaster</title>
+    <meta name="description" content="Every calculation Quartermaster makes, written out in full so you can check it.">
+
+    <meta property="og:title" content="Quartermaster — Methodology">
+    <meta property="og:description" content="Every calculation written out in full, so you can check it.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://quartermasterlabs.com/docs.html">
+    <meta property="og:image" content="https://quartermasterlabs.com/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="icon" href="assets/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/styles.css">
+
+    <!-- KaTeX renders the formulas. Pinned version so an upgrade can't silently change output. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/katex.min.css"
+          integrity="sha384-3rdsX6e5mueWyoweR9NIVmtEsUkokpBT/0ALqKKIBMr9j4qhHkaIkAcGgsE6uVlp" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/katex.min.js"
+            integrity="sha384-QFFtAGzvvj+bfgCGxXJlNZZR1nXEZgvG8tDLCCY1F19xl20WlfTYgguB4VcNdxYk" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/contrib/auto-render.min.js"
+            integrity="sha384-bjyGPfbij8/NDKJhSGZNP/khQVgtHUE5exjm4Ydllo42FwIgYsdLO2lXGmRBf5Mz" crossorigin="anonymous"
+            onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="site-nav">
+    <div class="wrap">
+        <a class="nav-brand" href="index.html">Quartermaster<span class="mono-accent">_</span></a>
+        <div class="nav-links">
+            <a href="docs.html" aria-current="page">Docs</a>
+            <a href="about.html">About</a>
+            <a href="contact.html">Contact</a>
+            <a class="cta-button small" href="https://app.quartermasterlabs.com">Launch app</a>
+        </div>
+    </div>
+</nav>
+
+<main id="main">
+
+    <header class="page-header">
+        <div class="wrap">
+            <p class="eyebrow">Documentation</p>
+            <h1>Methodology</h1>
+            <p class="lede">
+                Every number Quartermaster shows you, and exactly how it is calculated. Nothing here
+                is proprietary — the point is that you can check the work.
+            </p>
+        </div>
+    </header>
+
+    <div class="content">
+        <div class="wrap">
+            <div class="docs-layout">
+
+                <!-- ====================================================== toc === -->
+                <aside class="toc">
+                    <p>On this page</p>
+                    <ol>
+                        <li><a href="#limitations">Limitations</a></li>
+                        <li><a href="#pipeline">How the pipeline works</a></li>
+                        <li><a href="#data">Data source</a></li>
+                        <li><a href="#inspector">Integrity checks</a></li>
+                        <li><a href="#returns">Returns</a></li>
+                        <li><a href="#sma">Moving averages</a></li>
+                        <li><a href="#volatility">Rolling volatility</a></li>
+                        <li><a href="#cumulative">Cumulative return</a></li>
+                        <li><a href="#drawdown">Drawdown</a></li>
+                        <li><a href="#distribution">Distribution stats</a></li>
+                        <li><a href="#histogram">Returns histogram</a></li>
+                        <li><a href="#charts">Reading the charts</a></li>
+                        <li><a href="#changelog">Changelog</a></li>
+                    </ol>
+                </aside>
+
+                <!-- ===================================================== body === -->
+                <article>
+
+                    <!-- PLACEHOLDER: update this line whenever a calculation changes -->
+                    <p class="meta-line">Version 1.0 &middot; Last updated [DATE] &middot; Applies to the live app</p>
+
+                    <p>
+                        Quartermaster downloads daily market data for a crypto asset, audits that data
+                        before doing any arithmetic, and then computes a small set of risk and return
+                        figures. All calculations run on <strong>pandas</strong> and <strong>NumPy</strong>
+                        using the daily closing price unless stated otherwise.
+                    </p>
+
+                    <p>
+                        One convention matters throughout: crypto markets trade every day of the year,
+                        so annualisation uses <strong>365</strong> periods per year rather than the 252
+                        trading days conventionally used for equities.
+                    </p>
+
+                    <!-- Limitations deliberately sit near the top, not buried at the bottom. -->
+                    <h2 id="limitations">Limitations</h2>
+
+                    <blockquote>
+                        <p>
+                            Read this section first. A tool that hides its weaknesses is not worth trusting,
+                            and these affect how much weight you should put on any figure below.
+                        </p>
+                    </blockquote>
+
+                    <ul>
+                        <li>
+                            <strong>Data quality depends on Yahoo Finance.</strong> It is a free,
+                            aggregated source. It can carry gaps, delayed updates, and occasional errors,
+                            and its figures differ from exchange-level data. The Tick Inspector catches
+                            structural problems, not every possible inaccuracy.
+                        </li>
+                        <li>
+                            <strong>Short histories make statistics unreliable.</strong> Skewness,
+                            excess kurtosis, and volatility all need a reasonable sample. Over very short
+                            ranges the moving averages and rolling volatility may not appear at all,
+                            because their windows have not filled.
+                        </li>
+                        <li>
+                            <strong>Stablecoins and wrapped assets behave differently.</strong> A
+                            stablecoin's near-zero returns and extreme kurtosis reflect its peg, not
+                            typical market behaviour. Reading them like a freely floating asset will
+                            mislead you.
+                        </li>
+                        <li>
+                            <strong>Annualisation is an approximation.</strong> The $\sqrt{365}$ scaling
+                            assumes daily returns are independent of one another. That is the conventional
+                            assumption, not a measured fact.
+                        </li>
+                        <li>
+                            <strong>Gaps distort some figures.</strong> If a date is missing, the following
+                            return spans more than one day while being treated as a single day. See the
+                            <a href="#inspector">integrity checks</a>.
+                        </li>
+                        <li>
+                            <strong>Nothing here is predictive.</strong> Every figure describes what
+                            already happened.
+                        </li>
+                        <li>
+                            <strong>No costs are modelled.</strong> Transaction fees, slippage, spreads,
+                            and taxes appear nowhere in these calculations.
+                        </li>
+                    </ul>
+
+                    <h2 id="pipeline">How the pipeline works</h2>
+
+                    <p>
+                        The app runs a fixed sequence, and it will stop rather than show you numbers it
+                        does not trust.
+                    </p>
+
+<pre><code>Select asset + dates  →  Download  →  Tick Inspector  →  Quant Analyzer  →  Dashboard
+                                            │
+                                       bad data?
+                                            │
+                                   Hard Stop: report the problem, render nothing</code></pre>
+
+                    <p>
+                        This is a <strong>Hard Stop</strong> methodology, and it works in three parts:
+                    </p>
+
+                    <ol>
+                        <li>
+                            <strong>The Gatekeeper.</strong> Every download passes through the Tick
+                            Inspector before any calculation runs.
+                        </li>
+                        <li>
+                            <strong>The Health Check.</strong> If the inspector finds corrupted data,
+                            the pipeline halts and shows you exactly which rows or dates are affected.
+                            Bad data never reaches a chart.
+                        </li>
+                        <li>
+                            <strong>The Render.</strong> If the data passes, the analytics run and the
+                            dashboard is drawn.
+                        </li>
+                    </ol>
+
+                    <p>
+                        Missing calendar dates are treated differently from corrupted values. A small
+                        number of gaps produces a visible warning but the analysis still runs. The
+                        reasoning is in the next section.
+                    </p>
+
+                    <h2 id="data">Data source</h2>
+
+                    <ul>
+                        <li><strong>Provider:</strong> Yahoo Finance, accessed through the <code>yfinance</code> library.</li>
+                        <li><strong>Frequency:</strong> daily bars (open, high, low, close, volume).</li>
+                        <li>
+                            <strong>Price adjustment:</strong> <code>auto_adjust=True</code> is set
+                            explicitly, so the output does not depend on a library default that could
+                            change between versions. Crypto has no splits or dividends, so adjusted and
+                            raw prices are effectively identical here.
+                        </li>
+                        <li>
+                            <strong>Date range:</strong> the date pickers are bounded by the earliest and
+                            latest dates Yahoo Finance holds for the selected asset. Yahoo treats a
+                            download's end date as <em>exclusive</em>, so the app adds one day internally
+                            — which makes the date you select inclusive, as you would expect.
+                        </li>
+                        <li>
+                            <strong>Column handling:</strong> columns are lower-cased to
+                            <code>open</code>, <code>high</code>, <code>low</code>, <code>close</code>,
+                            <code>volume</code>, and the index is named <code>date</code>.
+                        </li>
+                        <li>
+                            <strong>Caching:</strong> downloads are cached for one hour, and the available
+                            date range for each asset for 24 hours, so repeated interaction does not hammer
+                            Yahoo Finance. Failures are never cached — a temporary outage cannot be stored
+                            and served to the next visitor.
+                        </li>
+                    </ul>
+
+                    <h2 id="inspector">Integrity checks (the Tick Inspector)</h2>
+
+                    <p>
+                        Before any analysis, the downloaded data is audited. Four checks are fatal, and
+                        one is tolerated up to a limit.
+                    </p>
+
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Check</th>
+                                    <th>What it looks for</th>
+                                    <th>If it fails</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Duplicate rows</td>
+                                    <td>Repeated timestamps in the index</td>
+                                    <td class="tag-stop">Hard stop</td>
+                                </tr>
+                                <tr>
+                                    <td>Corrupted high/low</td>
+                                    <td>Rows where <code>low &gt; high</code></td>
+                                    <td class="tag-stop">Hard stop</td>
+                                </tr>
+                                <tr>
+                                    <td>Open/close above high</td>
+                                    <td>Rows where <code>open &gt; high</code> or <code>close &gt; high</code></td>
+                                    <td class="tag-stop">Hard stop</td>
+                                </tr>
+                                <tr>
+                                    <td>Negative volume</td>
+                                    <td>Rows where <code>volume &lt; 0</code></td>
+                                    <td class="tag-stop">Hard stop</td>
+                                </tr>
+                                <tr>
+                                    <td>Missing dates</td>
+                                    <td>Calendar days between the first and last row that are absent</td>
+                                    <td class="tag-warn">Warning up to 5, then hard stop</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>Why missing dates are treated differently</h3>
+
+                    <p>
+                        A full daily calendar is built between the first and last date in the downloaded
+                        data, and any dates absent from that calendar are counted. Up to <strong>five</strong>
+                        missing dates are tolerated: the analysis runs, and a warning above the dashboard
+                        lists exactly which dates were missing. Beyond that limit the analysis stops.
+                    </p>
+
+                    <p>
+                        The reason for tolerating a few is that a gap does not corrupt a price, it only
+                        shifts a return. Returns are computed row to row, so the row after a gap carries a
+                        multi-day move while being treated as a single day. The effect on
+                        <strong>cumulative return is negligible</strong> — the compounding still arrives at
+                        the correct final price — but it can slightly distort
+                        <strong>rolling volatility</strong> and the <strong>returns distribution</strong>.
+                        That is why the warning names those two figures specifically.
+                    </p>
+
+                    <h2 id="returns">Returns</h2>
+
+                    <p>Two kinds of daily return are computed from the closing price $P_t$:</p>
+
+                    <h3>Simple (percentage) return</h3>
+
+                    <p>$$r_t = \frac{P_t}{P_{t-1}} - 1$$</p>
+
+                    <h3>Log return</h3>
+
+                    <p>$$\ell_t = \ln\left(\frac{P_t}{P_{t-1}}\right)$$</p>
+
+                    <p>Each is used deliberately:</p>
+
+                    <ul>
+                        <li>
+                            <strong>Simple returns</strong> drive cumulative return and drawdown, because
+                            they compound directly into portfolio value.
+                        </li>
+                        <li>
+                            <strong>Log returns</strong> drive volatility, skewness, excess kurtosis, and
+                            the histogram. They are the standard choice for statistical work, and at daily
+                            frequency the two measures are very close.
+                        </li>
+                        <li>
+                            The <strong>first row</strong> of each series is empty, since there is no
+                            previous day, and it is excluded from the statistics.
+                        </li>
+                    </ul>
+
+                    <h2 id="sma">Moving averages</h2>
+
+                    <p>Simple moving averages of the closing price:</p>
+
+                    <p>$$\text{SMA}_n(t) = \frac{1}{n}\sum_{i=0}^{n-1} P_{t-i}$$</p>
+
+                    <p>
+                        The <strong>20-day</strong> and <strong>50-day</strong> SMAs are overlaid on the
+                        candlestick chart. Each line only begins once its window has filled, so the 20-day
+                        line starts after 20 observations and the 50-day after 50. A short date range may
+                        show one line, or neither.
+                    </p>
+
+                    <h2 id="volatility">Rolling volatility</h2>
+
+                    <p>$$\sigma_{\text{ann}}(t) = \text{std}\left(\ell_{t-29},\ \ldots,\ \ell_t\right) \times \sqrt{365}$$</p>
+
+                    <p>
+                        This is the standard deviation of daily log returns over a rolling
+                        <strong>30-day window</strong>, scaled by $\sqrt{365}$ to express it as an annual
+                        figure. Volatility is a measure of risk: how widely returns have been spread
+                        recently.
+                    </p>
+
+                    <p>
+                        Two things to keep in mind. The window length controls only how smooth the line is,
+                        while the $\sqrt{365}$ term is what changes the scale from per-day to per-year. And
+                        that scaling assumes returns are independent from one day to the next, which is a
+                        convention rather than a measured property of the market.
+                    </p>
+
+                    <h2 id="cumulative">Cumulative return</h2>
+
+                    <p>$$R_{\text{cum}}(t) = \prod_{s=1}^{t}\left(1 + r_s\right) - 1$$</p>
+
+                    <p>
+                        The total percentage gain or loss since the <strong>start of the selected period</strong>
+                        — that is, the first close in your chosen range, not the asset's all-time first
+                        price. A value of 1.5 means +150%.
+                    </p>
+
+                    <h2 id="drawdown">Drawdown and maximum drawdown</h2>
+
+                    <p>A growth index is built by compounding the daily simple returns, starting at 1:</p>
+
+                    <p>$$W_t = \prod_{s=1}^{t}\left(1 + r_s\right), \qquad W_0 = 1$$</p>
+
+                    <p>The running peak and the drawdown follow from it:</p>
+
+                    <p>$$M_t = \max_{s \le t} W_s, \qquad D_t = \frac{W_t - M_t}{M_t}$$</p>
+
+                    <ul>
+                        <li>
+                            <strong>Drawdown</strong> $D_t$ is how far the asset sits below its highest
+                            point so far, as a percentage. It is always zero or negative.
+                        </li>
+                        <li>
+                            <strong>Maximum drawdown</strong> is the lowest value $D_t$ reaches over the
+                            selected period: the worst peak-to-trough loss someone holding throughout
+                            would have lived through.
+                        </li>
+                        <li>
+                            The peak starts at the first close in your range, so if the price falls
+                            immediately, the drawdown is measured from that starting point.
+                        </li>
+                    </ul>
+
+                    <p>
+                        On the chart this is drawn as a filled "underwater" area, which makes the depth
+                        and the duration of each decline visible at once.
+                    </p>
+
+                    <h2 id="distribution">Distribution statistics</h2>
+
+                    <p>
+                        Both are computed on <strong>daily log returns</strong> using the pandas estimators
+                        <code>.skew()</code> and <code>.kurt()</code>.
+                    </p>
+
+                    <h3>Skewness</h3>
+
+                    <p>
+                        A measure of asymmetry — which side holds the bigger surprises. A
+                        <strong>negative</strong> value means the left tail is longer, so the largest moves
+                        have tended to be drops. A <strong>positive</strong> value means the extremes lean
+                        toward gains. Near zero means balanced.
+                    </p>
+
+                    <h3>Excess kurtosis</h3>
+
+                    <p>
+                        A measure of tail weight relative to a normal distribution. Pandas
+                        <code>.kurt()</code> returns <em>excess</em> kurtosis — kurtosis minus 3 — so a
+                        normal distribution scores <strong>0</strong>. Large positive values indicate
+                        "fat tails": extreme days occur far more often than a bell curve predicts. Crypto
+                        assets typically score high.
+                    </p>
+
+                    <h3>Average daily returns</h3>
+
+                    <p>
+                        The tape also shows the mean daily log return and the mean daily simple return.
+                        These are arithmetic daily averages. They are <strong>not annualised</strong> and
+                        should not be read as an expected future return — a small average can conceal very
+                        large swings, which is why it belongs next to volatility and drawdown rather than
+                        on its own.
+                    </p>
+
+                    <h2 id="histogram">Returns histogram</h2>
+
+                    <ul>
+                        <li>
+                            Daily log returns are grouped into <strong>fixed-width bins of 0.5%</strong>,
+                            so each bar always covers the same width no matter how extreme the underlying
+                            data is.
+                        </li>
+                        <li>
+                            The x-axis is <strong>zoomed to the 1st–99th percentile</strong> of returns so
+                            the bulk of the distribution stays readable. The extreme days are still in the
+                            data and still in the chart — zoom out and you will see them.
+                        </li>
+                        <li>
+                            Hovering a bar shows the return range it covers and how many days fell inside it.
+                        </li>
+                    </ul>
+
+                    <h2 id="charts">Reading the charts</h2>
+
+                    <div class="card">
+                        <h3>Risk vs. cumulative return</h3>
+                        <p>
+                            Cumulative return answers "how much did it make?" Annualised volatility answers
+                            "how bumpy was the ride?" Together they show that the same return can be earned
+                            through very different amounts of discomfort.
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <h3>Drawdown</h3>
+                        <p>
+                            How far below its own peak the asset sat, day by day. The depth tells you the
+                            worst loss; the width tells you how long it took to recover. Both matter, and
+                            the second is routinely underestimated.
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <h3>Price action with SMAs</h3>
+                        <p>
+                            Daily candlesticks with the 20- and 50-day simple moving averages overlaid.
+                            The moving averages are descriptive context, not signals.
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <h3>Returns distribution</h3>
+                        <p>
+                            How often the price moved by each amount in a single day. Most days cluster
+                            near zero. The rare, far-out bars are the fat tails — and they are where most
+                            of the risk actually lives.
+                        </p>
+                    </div>
+
+                    <h2 id="changelog">Changelog</h2>
+
+                    <p>
+                        Corrections and methodology changes are recorded here. If a published figure was
+                        wrong, the fix and its date appear below rather than being quietly amended.
+                    </p>
+
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Version</th>
+                                    <th>Change</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- PLACEHOLDER: add a row for every methodology change you ship -->
+                                <tr>
+                                    <td>[DATE]</td>
+                                    <td>1.0</td>
+                                    <td>First public release.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <hr>
+
+                    <p>
+                        Spotted an error in any of the above? <a href="contact.html">Tell me</a> — that is
+                        the most useful message you can send.
+                    </p>
+
+                    <p style="margin-top:32px;">
+                        <a class="cta-button" href="https://app.quartermasterlabs.com">Launch the app</a>
+                    </p>
+
+                </article>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="footer-top">
+            <span class="footer-brand">quartermasterlabs.com</span>
+            <div class="footer-links">
+                <a href="https://app.quartermasterlabs.com">App</a>
+                <a href="docs.html">Docs</a>
+                <a href="about.html">About</a>
+                <a href="contact.html">Contact</a>
+                <a href="https://github.com/YOUR-USERNAME/quartermaster">GitHub</a>
+            </div>
+        </div>
+        <p class="disclaimer">
+            Quartermaster is for educational and research purposes only. It is not financial advice,
+            and nothing here is a recommendation to buy or sell any asset. Past performance does not
+            predict future results. Market data is sourced from Yahoo Finance and may contain errors
+            or gaps.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

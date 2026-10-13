@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About | Quartermaster</title>
+    <meta name="description" content="Who builds Quartermaster, and why.">
+
+    <meta property="og:title" content="About Quartermaster">
+    <meta property="og:description" content="Who builds Quartermaster, and why.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://quartermasterlabs.com/about.html">
+    <meta property="og:image" content="https://quartermasterlabs.com/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="icon" href="assets/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="site-nav">
+    <div class="wrap">
+        <a class="nav-brand" href="index.html">Quartermaster<span class="mono-accent">_</span></a>
+        <div class="nav-links">
+            <a href="docs.html">Docs</a>
+            <a href="about.html" aria-current="page">About</a>
+            <a href="contact.html">Contact</a>
+            <a class="cta-button small" href="https://app.quartermasterlabs.com">Launch app</a>
+        </div>
+    </div>
+</nav>
+
+<main id="main">
+
+    <header class="page-header">
+        <div class="prose">
+            <p class="eyebrow">About</p>
+            <h1>Who builds this</h1>
+            <p class="lede">
+                Quartermaster is built and maintained by one person. Here is who, and why.
+            </p>
+        </div>
+    </header>
+
+    <div class="content">
+        <div class="prose">
+
+            <!-- ================================================================
+                 PLACEHOLDER — replace everything in this section with your own
+                 words. Two or three short paragraphs. State plainly what you
+                 actually do; do not inflate it. Understatement reads as credible
+                 to the audience you are targeting.
+                 ================================================================ -->
+            <h2>Hi, I'm [YOUR NAME]</h2>
+
+            <p>
+                [One or two sentences: what you actually do day to day, and where you are based.
+                If you are not a finance professional, say so plainly — it is not a weakness,
+                and claiming otherwise is the fastest way to lose a technical reader.]
+            </p>
+
+            <p>
+                [One or two sentences: your relevant background. What drew you to quantitative
+                analysis, markets, or Python. Be specific rather than impressive — a concrete
+                detail beats a grand claim.]
+            </p>
+
+            <h2>Why I built Quartermaster</h2>
+
+            <p>
+                [Your version of this: what question you could not easily answer, what tool you
+                wanted and could not find, or what you wanted to learn by building it. The honest
+                reason is more interesting than a market-opportunity story.]
+            </p>
+
+            <!-- ============================== end of placeholder section ====== -->
+
+            <h2>How it was built</h2>
+
+            <p>
+                Quartermaster grew in four stages, each one a working tool before the next was
+                started. Every backend function was written by hand.
+            </p>
+
+            <ol>
+                <li>
+                    <strong>The OHLCV Downloader.</strong> A command-line script that queried
+                    Yahoo Finance, standardised the column names, and saved raw daily data to CSV.
+                </li>
+                <li>
+                    <strong>The Tick Inspector.</strong> A data-integrity layer that runs
+                    <em>before</em> any calculation: duplicate timestamps, missing calendar dates,
+                    negative volume, and corrupted price ticks such as a low above its own high.
+                </li>
+                <li>
+                    <strong>The Quant Analyzer.</strong> Daily and log returns, 20- and 50-day
+                    moving averages, rolling annualised volatility scaled for a 365-day market,
+                    cumulative return, and maximum drawdown.
+                </li>
+                <li>
+                    <strong>The web app.</strong> The three scripts were refactored into pure
+                    functions with no terminal input or output. Data now moves between them in
+                    memory as DataFrames, with a Streamlit interface and interactive Plotly charts
+                    on top.
+                </li>
+            </ol>
+
+            <h2>What it is, and what it isn't</h2>
+
+            <p>
+                Quartermaster <strong>is</strong> a research tool. It downloads historical market
+                data, refuses to analyse data that fails its integrity checks, and shows you what
+                risk actually looked like over a period you choose — the volatility, the drawdowns,
+                and the fat tails that summary statistics tend to hide.
+            </p>
+
+            <p>
+                Quartermaster <strong>is not</strong> a signal service, a backtester, a portfolio
+                tracker, or a source of advice. It does not tell you what to buy. It does not
+                predict anything. Every figure it shows describes the past.
+            </p>
+
+            <p>
+                It also is not a data vendor. Prices come from Yahoo Finance, a free and
+                occasionally imperfect source. The
+                <a href="docs.html#limitations">limitations are documented in full</a>, because a
+                tool that hides its weaknesses is not worth trusting.
+            </p>
+
+            <h2>Built in the open</h2>
+
+            <p>
+                The methodology behind every number is published so you can check it, and the
+                calculations are plain pandas and NumPy — nothing proprietary, nothing hidden.
+                If you find an error, I would rather hear about it than not.
+            </p>
+
+            <ul class="link-list">
+                <li>
+                    <span class="label">Methodology</span>
+                    <a href="docs.html">Read the full documentation</a>
+                </li>
+                <li>
+                    <span class="label">Source</span>
+                    <!-- PLACEHOLDER: your repo URL, or remove this row if the repo stays private -->
+                    <a href="https://github.com/YOUR-USERNAME/quartermaster">github.com/YOUR-USERNAME/quartermaster</a>
+                </li>
+                <li>
+                    <span class="label">X</span>
+                    <a href="https://x.com/brownbaconx" rel="me">@brownbaconx</a>
+                </li>
+                <li>
+                    <span class="label">LinkedIn</span>
+                    <!-- PLACEHOLDER: your LinkedIn URL -->
+                    <a href="https://www.linkedin.com/in/YOUR-HANDLE/" rel="me">linkedin.com/in/YOUR-HANDLE</a>
+                </li>
+                <li>
+                    <span class="label">Email</span>
+                    <!-- PLACEHOLDER: confirm this address exists before launch -->
+                    <a href="mailto:hello@quartermasterlabs.com">hello@quartermasterlabs.com</a>
+                </li>
+            </ul>
+
+            <p style="margin-top:36px;">
+                <a class="cta-button" href="https://app.quartermasterlabs.com">Launch the app</a>
+            </p>
+
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="footer-top">
+            <span class="footer-brand">quartermasterlabs.com</span>
+            <div class="footer-links">
+                <a href="https://app.quartermasterlabs.com">App</a>
+                <a href="docs.html">Docs</a>
+                <a href="about.html">About</a>
+                <a href="contact.html">Contact</a>
+                <a href="https://github.com/YOUR-USERNAME/quartermaster">GitHub</a>
+            </div>
+        </div>
+        <p class="disclaimer">
+            Quartermaster is for educational and research purposes only. It is not financial advice,
+            and nothing here is a recommendation to buy or sell any asset. Past performance does not
+            predict future results. Market data is sourced from Yahoo Finance and may contain errors
+            or gaps.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

@@ -3,138 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quartermaster | Quant Research </title>
-    <!-- Importing Inter for text and JetBrains Mono for technical accents -->
+    <title>Quartermaster | Quantitative research dashboard for crypto</title>
+    <meta name="description" content="Source historical crypto data, audit it for integrity problems, and visualise risk and return. Built in the open.">
+
+    <!-- Open Graph / social preview -->
+    <meta property="og:title" content="Quartermaster">
+    <meta property="og:description" content="Source, clean, and visualise risk and returns for crypto assets.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://quartermasterlabs.com/">
+    <meta property="og:image" content="https://quartermasterlabs.com/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="icon" href="assets/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #050505; /* Deep black */
-            /* Creates a subtle technical grid background */
-            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
-            color: #E5E7EB;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            text-align: center;
-        }
-        .container {
-            max-width: 700px;
-            padding: 40px 20px;
-        }
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            background-color: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: #34D399; /* Neon Green */
-            margin-bottom: 24px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .dot {
-            width: 8px;
-            height: 8px;
-            background-color: #34D399;
-            border-radius: 50%;
-            margin-right: 10px;
-            box-shadow: 0 0 8px #34D399;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
-        }
-        h1 {
-            font-size: 3.5rem;
-            margin: 0 0 16px 0;
-            letter-spacing: -1.5px;
-            font-weight: 600;
-            color: #FFFFFF;
-        }
-        .mono-accent {
-            font-family: 'JetBrains Mono', monospace;
-            color: #60A5FA; /* Electric Blue */
-            font-weight: 400;
-        }
-        p.description {
-            font-size: 1.2rem;
-            line-height: 1.6;
-            color: #9CA3AF;
-            margin-bottom: 40px;
-        }
-        .features {
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            margin-bottom: 48px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            color: #6B7280;
-        }
-        .features span::before {
-            content: '>';
-            color: #34D399;
-            margin-right: 6px;
-        }
-        
-        /* Updated CTA Link Button Styles */
-        .cta-button {
-            display: inline-block;
-            padding: 14px 28px;
-            background-color: #E5E7EB;
-            color: #050505;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-        .cta-button:hover {
-            background-color: #FFFFFF;
-        }
-        .cta-button:active {
-            transform: scale(0.98);
-        }
-    </style>
+    <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
 
-    <div class="container">
-        <div class="status-badge">
-            <div class="dot"></div>
-            V1 in Development
-        </div>
-        
-        <h1>Quartermaster<span class="mono-accent">_</span></h1>
-        
-        <p class="description">
-            Next-generation quantitative research dashboard. 
-            Source historical data, run anomaly audits, and visualize risk-adjusted metrics instantly.
-        </p>
+<a class="skip-link" href="#main">Skip to content</a>
 
-        <div class="features">
-            <span>OHLCV Downloader</span>
-            <span>Tick Inspector</span>
-            <span>Quant Analyzer</span>
+<!-- ============================================================ nav === -->
+<nav class="site-nav">
+    <div class="wrap">
+        <a class="nav-brand" href="index.html">Quartermaster<span class="mono-accent">_</span></a>
+        <div class="nav-links">
+            <a href="docs.html">Docs</a>
+            <a href="about.html">About</a>
+            <a href="contact.html">Contact</a>
+            <a class="cta-button small" href="https://app.quartermasterlabs.com">Launch app</a>
         </div>
-
-        <!-- Hyperlink replacing the email form -->
-        <a href="https://x.com/brownbaconx" target="_blank" rel="noopener noreferrer" class="cta-button">
-            Reach out for details
-        </a>
     </div>
+</nav>
+
+<main id="main">
+    <section class="hero">
+        <div class="container">
+            <div class="status-badge">
+                <div class="dot"></div>
+                V1 in Development
+            </div>
+
+            <h1>Quartermaster<span class="mono-accent">_</span></h1>
+
+            <p class="description">
+                A quantitative research dashboard for crypto assets. Source historical data,
+                audit it for integrity problems, and visualise risk and return over any timeframe
+                you choose.
+            </p>
+
+            <div class="features">
+                <span>OHLCV Downloader</span>
+                <span>Tick Inspector</span>
+                <span>Quant Analyzer</span>
+            </div>
+
+            <div class="hero-actions">
+                <a class="cta-button" href="https://app.quartermasterlabs.com">Launch app</a>
+                <a class="ghost-button" href="docs.html">Read the methodology</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- ========================================================= footer === -->
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="footer-top">
+            <span class="footer-brand">quartermasterlabs.com</span>
+            <div class="footer-links">
+                <a href="https://app.quartermasterlabs.com">App</a>
+                <a href="docs.html">Docs</a>
+                <a href="about.html">About</a>
+                <a href="contact.html">Contact</a>
+                <!-- PLACEHOLDER: replace with your repo URL, or delete this line -->
+                <a href="https://github.com/YOUR-USERNAME/quartermaster">GitHub</a>
+            </div>
+        </div>
+        <p class="disclaimer">
+            Quartermaster is for educational and research purposes only. It is not financial advice,
+            and nothing here is a recommendation to buy or sell any asset. Past performance does not
+            predict future results. Market data is sourced from Yahoo Finance and may contain errors
+            or gaps.
+        </p>
+    </div>
+</footer>
 
 </body>
 </html>
