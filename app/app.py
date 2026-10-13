@@ -232,7 +232,7 @@ def visualize(df):
 #--------------------------------------------------------------#
 
 # User Interface 
-st.title("Source. Process. Visualize.")
+st.title("Visualize quant metrics for your favourite asset")
 
 # managing the sidebar 
 st.sidebar.header("Configuration")
