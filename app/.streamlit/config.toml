@@ -6,5 +6,43 @@ gatherUsageStats = false
 
 [theme]
 base = "dark"
-primaryColor = "#34d399"
-backgroundColor = "#0a0a0a"
+
+# --- core palette (from the site's :root tokens) ---
+primaryColor            = "#34D399"   # --green   : buttons, focus, active states
+backgroundColor         = "#050505"   # --bg      : main canvas
+secondaryBackgroundColor= "#101010"   # sidebar, metric cards, inputs
+textColor               = "#E5E7EB"   # --text
+linkColor               = "#60A5FA"   # --blue    : the wordmark cursor colour
+
+# --- borders and shape ---
+borderColor      = "#282828"
+showWidgetBorder = true
+baseRadius       = "small"
+buttonRadius     = "small"
+
+# --- type: Inter for UI, JetBrains Mono for code, same as the site ---
+font        = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+headingFont = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap"
+codeFont    = "JetBrains Mono:https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+
+baseFontSize          = 15
+headingFontWeights    = [700, 600, 600, 600, 600, 600]
+# h1 is the app title; h3 is every st.subheader above a chart — keep it modest
+headingFontSizes      = ["2.1rem", "1.5rem", "1.1rem", "1rem", "0.95rem", "0.9rem"]
+
+# the metrics tape: large, tight figures
+metricValueFontSize   = "1.9rem"
+metricValueFontWeight = 600
+
+# --- semantic colours for st.success / st.warning / st.error ---
+greenColor  = "#34D399"
+redColor    = "#EF4444"
+yellowColor = "#FBBF24"
+
+# --- dataframes (the bad-data tables) ---
+dataframeBorderColor          = "#282828"
+dataframeHeaderBackgroundColor= "#101010"
+dataframeHeaderTextColor      = "#9498A0"
+
+# --- charts: Plotly picks these up for categorical series ---
+chartCategoricalColors = ["#34D399", "#60A5FA", "#A78BFA", "#EF4444", "#FBBF24", "#F472B6"]
