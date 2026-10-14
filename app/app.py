@@ -121,6 +121,9 @@ def style_fig(fig, height=380):
         margin=dict(t=40, b=30, l=50, r=20),
         legend=dict(orientation="h", y=1.12),
         template="plotly_dark",
+        paper_bgcolor='#101010',
+        plot_bgcolor='#101010',
+        font=dict(family="Inter, sans-serif", color='#9498A0', size=12)
     )
     return fig
 #--------------------------------------------------------------#

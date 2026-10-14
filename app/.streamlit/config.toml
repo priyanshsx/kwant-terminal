@@ -27,7 +27,6 @@ codeFont    = "JetBrains Mono:https://fonts.googleapis.com/css2?family=JetBrains
 
 baseFontSize          = 15
 headingFontWeights    = [700, 600, 600, 600, 600, 600]
-# h1 is the app title; h3 is every st.subheader above a chart — keep it modest
 headingFontSizes      = ["2.1rem", "1.5rem", "1.1rem", "1rem", "0.95rem", "0.9rem"]
 
 # the metrics tape: large, tight figures
