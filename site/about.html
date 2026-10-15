@@ -50,50 +50,45 @@
     <div class="content">
         <div class="prose">
 
-            <h2>Hi, I'm Priyansh</h2>
-
-            <p>
-                I've been in crypto for 5+ years. I started back in 2020 and built a successful career in research, content and marketing.  
-                I'm an aspiring quantitative analyst who has already completed four core finance certifications. I'm also an aspiring software developer having learnt coding (CS50) myself (Python, C, Go).
-                This app is a build-in-public tool to help you in your investing/trading journey. 
             </p>
 
-            <h2>Why I built Quartermaster</h2>
+            <h2>Why Quartermaster</h2>
 
             <p>
-                I always felt like an idiot reading and visualizing charts. After a couple of certifications hundreds of TA videos later, 
-                I realized that reading charts is not a skill. What matters is your ability to source, visualize, and understand the quantitative data. 
-                And hence: Quartermaster. 
+                Rigorous risk data on crypto assets is harder to come by than it should be. 
+                Price charts are everywhere; the figures that actually describe risk: how far an asset fell from its peak, how violently it moved, how often it did something a normal distribution says it shouldn't, usually require building the pipeline yourself.
             </p>
 
-            <h2>How it was built</h2>
+            <p>
+                Quartermaster does that work and shows it. Pick an asset, pick a timeframe, and see what the risk actually looked like, with every calculation behind the numbers published in full.
+            </p>
+
+            <h2>How it works</h2>
 
             <p>
-                Quartermaster is a build-in-public tool. Each feature will be shipped with the intention of making it quantitative data and analysis accessible to everyone. 
-                Quartermaster is currently free to use. 
-                The current version of the app features 4 tools. 
+            Every analysis runs through the same three stages, in order. The pipeline
+            stops rather than charting data it cannot vouch for.
             </p>
 
             <ol>
                 <li>
-                    <strong>The OHLCV Downloader.</strong> A command-line script that queried
-                    Yahoo Finance, standardised the column names, and saved raw daily data to CSV.
+                    <strong>The OHLCV Downloader</strong> pulls daily open, high, low, close and volume data
+                    for the selected asset and timeframe, standardiss the columns, and caches the result so repeated 
+                    queries don't hammer the source.
                 </li>
                 <li>
-                    <strong>The Tick Inspector.</strong> A data-integrity layer that runs
-                    <em>before</em> any calculation: duplicate timestamps, missing calendar dates,
-                    negative volume, and corrupted price ticks such as a low above its own high.
+                    <strong>The Tick Inspector</strong> audits that data before any calculation runs.
+                    Duplicate timestamps, missing calendar dates, negative volume, and corrupted price ticks such as a low above its own high.
+                    If the data fials, the analysis halts and reports exactly which rows or dates are at fault. 
                 </li>
                 <li>
-                    <strong>The Quant Analyzer.</strong> Daily and log returns, 20- and 50-day
-                    moving averages, rolling annualised volatility scaled for a 365-day market,
-                    cumulative return, and maximum drawdown.
+                    <strong>The Quant Analyzer</strong> computes the risk and return figures on data that passed inspection. 
+                    Daily and log returns, 20- and 50-day moving averages, rolling annualized volatility scaled for a 365-day market, cumulative return, maximum drawdown, and the shape of the return distribution. 
                 </li>
                 <li>
-                    <strong>The web app.</strong> The three scripts were refactored into pure
-                    functions with no terminal input or output. Data now moves between them in
-                    memory as DataFrames, with a Streamlit interface and interactive Plotly charts
-                    on top.
+                    The results render as interactive charts you can zoom, pan and read directly.
+                    The <a href="/docs">full methodology</a> documents every formula, data source,
+                    assumption and limitation behind them.
                 </li>
             </ol>
 
