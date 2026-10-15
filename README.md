@@ -4,7 +4,7 @@
 
 Quartermaster downloads historical daily market data for a set of crypto assets, audits that data for integrity problems, and, only if the data passes, computes risk and return metrics and renders them as interactive Plotly charts. You choose the asset and the timeframe.
 
-**Live app:** [https://kwant-terminal.streamlit.app/](https://app.quartermasterlabs.com/)
+**Live app:** [https://app.quartermasterlabs.com/](https://app.quartermasterlabs.com/) 
 
 > **Disclaimer:** Quartermaster is for educational and research purposes only. It is not financial advice. Past performance does not predict future results.
 
