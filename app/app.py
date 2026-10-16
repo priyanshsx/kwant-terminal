@@ -8,8 +8,10 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import yfinance as yf
 from datetime import timedelta
-st.set_page_config(layout="wide")
 from pathlib import Path
+st.set_page_config(layout="wide")
+ASSETS = Path(__file__).parent/"assets"
+st.logo(str(ASSETS / "logo-mark-256.png"), link="https://quartermasterlabs.com")
 #--------------------------------------------------------------#
 
 # Global Variables 
@@ -19,8 +21,6 @@ available_assets = ['BTC-USD', 'ETH-USD', 'SOL-USD', 'HYPE-USD', 'USDT-USD', 'BN
     'ZEC-USD', 'WETH-USD', 'TRX-USD', 'NEAR-USD', 'LSK-USD']
 
 MAX_MISSING_DATES = 5
-
-ASSETS = Path(__file__).parent/"assets"
 #--------------------------------------------------------------#
 
 # Checks for date ranges for which data is available from yfinance
@@ -117,6 +117,18 @@ def quant_analyzer(df, ui_ticker):
     return df
 #--------------------------------------------------------------#
 
+# Percent Format Function for low-volatility assets 
+def pct_format(span):
+    if span >= 0.10:
+        return ".0%"
+    if span >= 0.01:
+        return ".1%"
+    if span >= 0.001:
+        return ".2%"
+    return ".3%"
+
+#--------------------------------------------------------------#
+
 # Styling function for all the figures 
 def style_fig(fig, height=380):
     fig.update_layout(
@@ -124,10 +136,13 @@ def style_fig(fig, height=380):
         margin=dict(t=40, b=30, l=50, r=20),
         legend=dict(orientation="h", y=1.12),
         template="plotly_dark",
-        paper_bgcolor='#101010',
-        plot_bgcolor='#101010',
-        font=dict(family="Inter, sans-serif", color='#9498A0', size=12)
+        paper_bgcolor="#101010", plot_bgcolor="#101010",
+        font=dict(family="Inter, sans-serif", color="#9498A0", size=12),
     )
+
+    fig.update_xaxes(gridcolor="#1e1e1e")
+    fig.update_yaxes(gridcolor="#1e1e1e")
+    
     return fig
 #--------------------------------------------------------------#
 
@@ -138,6 +153,15 @@ def visualize(df):
     log_rets = df['log_returns'].dropna()
     lo = log_rets.quantile(0.01)
     hi = log_rets.quantile(0.99)
+    span = hi - lo 
+    bin_size = span / 50 if span > 0 else 0.001
+    ret_fmt = pct_format(span)
+
+    cum_ret = df['cumulative_return'].dropna()
+    vol = df['rolling_vol_annualized'].dropna()
+
+    cum_fmt = pct_format(cum_ret.max() - cum_ret.min()) if len(cum_ret) else ".1%"
+    vol_fmt = pct_format(vol.max() - vol.min()) if len(vol) else ".1%"
 
     # visualizations 
     candlestick_fig = go.Figure()
@@ -159,7 +183,7 @@ def visualize(df):
         y=df['sma_20'],
         mode='lines',
         name='20-day SMA',
-        line=dict(color='blue', width=1.5)
+        line=dict(color='#60A5FA', width=1.5)
     ))
 
     # sma 50
@@ -168,13 +192,13 @@ def visualize(df):
         y=df['sma_50'],
         mode='lines',
         name='50-day SMA',
-        line=dict(color='orange', width=1.5)
+        line=dict(color='#FBBF24', width=1.5)
     ))
 
     candlestick_fig.update_layout(xaxis_rangeslider_visible=False)
 
     # making subplots for quant charts 
-    risk_vs_cum_return_fig = make_subplots(rows=2, cols=1, shared_xaxes=True)
+    risk_vs_cum_return_fig = make_subplots(specs=[[{"secondary_y": True}]])
 
     # risk vs. return 
     risk_vs_cum_return_fig.add_trace(go.Scatter(
@@ -182,16 +206,16 @@ def visualize(df):
         y=df['cumulative_return'],
         mode='lines',
         name='Return',
-        line=dict(color='green', width=1.5)
-    ), row=1, col=1)
+        line=dict(color='#34D399', width=1.5)
+    ), secondary_y=False)
 
     risk_vs_cum_return_fig.add_trace(go.Scatter(
         x=df.index,
         y=df['rolling_vol_annualized'],
         mode='lines',
         name='Annualized Risk',
-        line=dict(color='purple', width=1.5)
-    ), row=2, col=1)
+        line=dict(color='#A78BFA', width=1.5)
+    ), secondary_y=True)
 
     # underwater drawdown chart 
     drawdown_fig = go.Figure()
@@ -200,38 +224,41 @@ def visualize(df):
         y=df['drawdown'],
         mode='lines',
         name='Drawdown',
-        line=dict(color='red', width=1.5),
+        line=dict(color='#EF4444', width=1.5),
         fill='tozeroy'
     ))
 
-    drawdown_fig.update_yaxes(title_text="Drawdown", tickformat=".1%")
+    drawdown_fig.update_yaxes(title_text="Drawdown", tickformat=pct_format(abs(df['drawdown'].min())))
 
     # returns distribution histogram 
-    returns_histogram_fig = go.Figure(go.Histogram(x=log_rets, xbins=dict(size=0.005), name='Returns Distribution',
-                                      hovertemplate=("Daily Return near %{x:.1%}<br>Days: %{y}<extra></extra>")))
+    returns_histogram_fig = go.Figure(go.Histogram(
+    x=log_rets,
+    xbins=dict(size=bin_size),
+    name='Returns Distribution',
+    marker_color="#60A5FA",
+    hovertemplate=f"Daily return near %{{x:{ret_fmt}}}<br>Days: %{{y}}<extra></extra>"
+    ))
 
     risk_vs_cum_return_fig.update_yaxes(
-        title_text="Cumulative Return (since start date)",
-        tickformat=".1%",
-        row=1, 
-        col=1
-    )
+    title_text="Cumulative Return",
+    tickformat=cum_fmt,
+    title_font_color="#34D399",
+    secondary_y=False)
 
     risk_vs_cum_return_fig.update_yaxes(
-        title_text="Annualized Volatility",
-        tickformat=".1%",
-        row=2,
-        col=1
-    )
+    title_text="Annualized Volatility",
+    tickformat=vol_fmt,
+    title_font_color="#A78BFA",
+    secondary_y=True)
 
     returns_histogram_fig.update_xaxes(range=[lo, hi], 
                           title_text="Daily log returns",
-                          tickformat=".0%")
+                          tickformat=ret_fmt)
     returns_histogram_fig.update_yaxes(title_text="Number of days")
 
     return (
         style_fig(candlestick_fig), 
-        style_fig(risk_vs_cum_return_fig, height=450), 
+        style_fig(risk_vs_cum_return_fig), 
         style_fig(drawdown_fig), 
         style_fig(returns_histogram_fig)
     )
@@ -323,7 +350,7 @@ if st.sidebar.button("Run analysis", type="primary"):
 result = st.session_state.get("result")
 
 if result:
-    st.title(f"Visualized quant metrics for {ui_ticker}")
+    st.title(f"Visualized quant metrics for {result['ticker']}")
     health_report = result["health_report"]
 
     if health_report["is_healthy"]:
@@ -340,35 +367,35 @@ if result:
         candlestick_fig, risk_vs_cum_return_fig, drawdown_fig, returns_histogram_fig = charts
 
         # Building the columns in streamlit 
-        col1, col2, col3, col4, col5 = st.columns(5)
-        col1.metric(label="Skewness", value=round(enriched_data['skewness'].iloc[-1], 4))
-        col2.metric(label='Excess Kurtosis', value=round(enriched_data['kurtosis'].iloc[-1], 4))
-        col3.metric(label='Avg. Daily Log Return', value=f"{enriched_data['avg_daily_log_return'].iloc[-1]: .2%}")
-        col4.metric(label='Avg. Daily Return', value=f"{enriched_data['avg_daily_simple_return'].iloc[-1]: .2%}")
-        col5.metric(label="Max Drawdown",value=f"{enriched_data['max_drawdown'].iloc[-1]: .2%}")
+        m1, m2, m3, m4, m5 = st.columns(5)
+        m1.metric(label="Skewness", value=round(enriched_data['skewness'].iloc[-1], 4))
+        m2.metric(label='Excess Kurtosis', value=round(enriched_data['kurtosis'].iloc[-1], 4))
+        m3.metric(label='Avg. Daily Log Return', value=f"{enriched_data['avg_daily_log_return'].iloc[-1]: .2%}")
+        m4.metric(label='Avg. Daily Return', value=f"{enriched_data['avg_daily_simple_return'].iloc[-1]: .2%}")
+        m5.metric(label="Max Drawdown",value=f"{enriched_data['max_drawdown'].iloc[-1]: .2%}")
 
         # Step 3: Build the charts  
-        col1, col2 = st.columns(2)
+        top_left, top_right = st.columns(2, gap="medium")
 
-        with col1:
-            # risk vs cumulative return 
-            st.subheader(f"{result["ticker"]} Risk vs. Cumulative Return")
+        with top_left:
+            st.subheader(f"{result['ticker']} Risk vs. Return")
             st.plotly_chart(risk_vs_cum_return_fig, use_container_width=True)
 
-            # drawdown 
-            st.subheader(f"{result["ticker"]} Drawdown (for selected period)")
-            st.plotly_chart(drawdown_fig, use_container_width=True)
-        
-        with col2:
-            # price chart with SMAs
-            st.subheader(f"{result["ticker"]} Price Action with SMAs")
+        with top_right:
+            st.subheader(f"{result['ticker']} Price Action with SMAs")
             st.plotly_chart(candlestick_fig, use_container_width=True)
 
-            # returns histogram
-            st.subheader(f"{result["ticker"]} Historical Returns")
+        bottom_left, bottom_right = st.columns(2, gap="medium")
+
+        with bottom_left:
+            st.subheader(f"{result['ticker']} Drawdown")
+            st.plotly_chart(drawdown_fig, use_container_width=True)
+
+        with bottom_right:
+            st.subheader(f"{result['ticker']} Historical Returns")
             st.plotly_chart(returns_histogram_fig, use_container_width=True)
-            st.caption("Each bar groups days by their return. Hover to see the return range and how many days fell in it. "
-                       "Axis zoomed to the 1st-99th percentile. Zoom out to see extreme days.")
+            st.caption("Each bar groups days by their return. Hover to see the return range "
+                       "and how many days fell in it. Axis zoomed to the 1st-99th percentile.")
 #--------------------------------------------------------------#
 
 # Dealing with bad data         
