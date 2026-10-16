@@ -9,6 +9,7 @@ from plotly.subplots import make_subplots
 import yfinance as yf
 from datetime import timedelta
 st.set_page_config(layout="wide")
+from pathlib import Path
 #--------------------------------------------------------------#
 
 # Global Variables 
@@ -18,6 +19,8 @@ available_assets = ['BTC-USD', 'ETH-USD', 'SOL-USD', 'HYPE-USD', 'USDT-USD', 'BN
     'ZEC-USD', 'WETH-USD', 'TRX-USD', 'NEAR-USD', 'LSK-USD']
 
 MAX_MISSING_DATES = 5
+
+ASSETS = Path(__file__).parent/"assets"
 #--------------------------------------------------------------#
 
 # Checks for date ranges for which data is available from yfinance
@@ -235,7 +238,6 @@ def visualize(df):
 #--------------------------------------------------------------#
 
 # User Interface 
-st.title("Visualize quant metrics for your favourite asset")
 
 # managing the sidebar 
 st.sidebar.header("Configuration")
@@ -321,6 +323,7 @@ if st.sidebar.button("Run analysis", type="primary"):
 result = st.session_state.get("result")
 
 if result:
+    st.title(f"Visualized quant metrics for {ui_ticker}")
     health_report = result["health_report"]
 
     if health_report["is_healthy"]:
@@ -391,5 +394,33 @@ if result:
         if len(health_report['high_open_close']) > 0:
             st.warning("Rows where open or close is higher than high: ")
             st.dataframe(health_report['high_open_close'])
+
+else:
+    # Managing the empty state 
+
+    left, middle, right = st.columns([1, 2, 1])
+
+    with middle:
+        st.logo(str(ASSETS / "logo-mark-256.png"), link="https://quartermasterlabs.com")
+
+        st.markdown("# Quantitative risk analysis for crypto assets")
+        st.markdown(
+            "Pick an asset and a timeframe. Quartermaster audits the data "
+            " before it charts anything, then shows what the risk actually "
+            " looked like."
+        )
+
+        st.markdown(
+            "1. **Select a ticker** in the sidebar\n"
+            "2. **Choose your timeframe**\n"
+            "3. **Run analysis**"
+        )
+
+        st.image(str(ASSETS/"sample-dashboard.png"))
+        st.caption("Example: BTC-USD over the last year.")
+
+        st.markdown("[Read the methodology](https://quartermasterlabs.com/docs)")
+
+
 #--------------------------------------------------------------#
 #----------------------End-of-code-----------------------------#
