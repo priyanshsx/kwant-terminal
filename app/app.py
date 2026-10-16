@@ -9,9 +9,9 @@ from plotly.subplots import make_subplots
 import yfinance as yf
 from datetime import timedelta
 from pathlib import Path
-st.set_page_config(layout="wide")
 ASSETS = Path(__file__).parent/"assets"
 st.logo(str(ASSETS / "logo-mark-256.png"), link="https://quartermasterlabs.com")
+st.set_page_config(layout="wide", page_title="Quartermaster", page_icon=str(ASSETS/"favicon-32.png"))
 #--------------------------------------------------------------#
 
 # Global Variables 
@@ -225,7 +225,7 @@ def visualize(df):
         mode='lines',
         name='Drawdown',
         line=dict(color='#EF4444', width=1.5),
-        fill='tozeroy'
+        fill='tozeroy', fillcolor="rgba(239,68,68,0.22)"
     ))
 
     drawdown_fig.update_yaxes(title_text="Drawdown", tickformat=pct_format(abs(df['drawdown'].min())))
@@ -368,11 +368,11 @@ if result:
 
         # Building the columns in streamlit 
         m1, m2, m3, m4, m5 = st.columns(5)
-        m1.metric(label="Skewness", value=round(enriched_data['skewness'].iloc[-1], 4))
-        m2.metric(label='Excess Kurtosis', value=round(enriched_data['kurtosis'].iloc[-1], 4))
-        m3.metric(label='Avg. Daily Log Return', value=f"{enriched_data['avg_daily_log_return'].iloc[-1]: .2%}")
-        m4.metric(label='Avg. Daily Return', value=f"{enriched_data['avg_daily_simple_return'].iloc[-1]: .2%}")
-        m5.metric(label="Max Drawdown",value=f"{enriched_data['max_drawdown'].iloc[-1]: .2%}")
+        m1.metric(label="Skew", value=round(enriched_data['skewness'].iloc[-1], 4), help="Asymmetry of daily log returns. Negative means the big moves tend to be drops.")
+        m2.metric(label='Excess Kurtosis', value=round(enriched_data['kurtosis'].iloc[-1], 4), help="Tail weight vs a normal distribution. 0 is normal; higher means extreme days are more common.")
+        m3.metric(label='Avg. Log Return', value=f"{enriched_data['avg_daily_log_return'].iloc[-1]: .2%}", help="Mean daily log return. Not annualised.")
+        m4.metric(label='Avg. Return', value=f"{enriched_data['avg_daily_simple_return'].iloc[-1]: .2%}", help="Mean daily simple return. Not annualised.")
+        m5.metric(label="Max Drawdown",value=f"{enriched_data['max_drawdown'].iloc[-1]: .2%}", help="Worst peak-to-trough fall over the selected period.")
 
         # Step 3: Build the charts  
         top_left, top_right = st.columns(2, gap="medium")
