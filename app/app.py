@@ -259,7 +259,7 @@ if ui_ticker:
         st.sidebar.info(f"Available from {min_date} to {max_date}")
 
         ui_start_date = st.sidebar.date_input(label='select start date',
-                                            value=min_date,
+                                            value=max(min_date, (max_date - timedelta(days=365))),
                                             min_value=min_date,
                                             max_value=max_date)
 
@@ -273,7 +273,7 @@ else:
 #--------------------------------------------------------------#
 
 # letting the user click the run analysis button to continue
-if st.sidebar.button("Run analysis"):
+if st.sidebar.button("Run analysis", type="primary"):
     st.session_state.pop("result", None)
 
     # input validation 
